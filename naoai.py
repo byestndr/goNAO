@@ -4,8 +4,10 @@ from re import sub
 from re import DOTALL
 import qi
 import sys
-import time
+from time import sleep
 import argparse
+from whisper import load_model
+from whisper import transcribe
 # import traceback
 from os import path
 from os import system
@@ -144,7 +146,7 @@ if args.norobot == False:
             channels = [0, 0, 1, 0]
             start_record.stopRecord()
             start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
-            time.sleep(3)
+            sleep(3)
             start_record.stopRecord()
             audfile = path.dirname(path.realpath(__file__))+"/request.wav"
             # SCPs the file over to the host
@@ -174,12 +176,12 @@ if args.norobot == False:
 
             # Make NAO say the response by calling the method corresponding to each model
             start_record.speechTalk(airesponse(prompt))
-            time.sleep(1)
+            sleep(1)
 
 
     except KeyboardInterrupt:
         print("Exiting the program")
-        time.sleep(1)
+        sleep(1)
         print("Stopping current recordings")
         start_record.stopRecord()
         print("Stopped")
