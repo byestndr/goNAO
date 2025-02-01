@@ -35,6 +35,8 @@ class audiorecorder():
     def speechTalk(self, reply):
         self.tts.setLanguage("English")
         self.tts.say(reply)
+    def stopTalk(self):
+        self.tts.stopAll()
 
 
 # This connects to the NAO
@@ -177,6 +179,7 @@ if args.norobot == False:
 
     except KeyboardInterrupt:
         print("Exiting the program")
+        start_record.stopTalk()
         sleep(1)
         print("Stopping current recordings")
         start_record.stopRecord()
