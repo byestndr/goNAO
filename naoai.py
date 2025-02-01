@@ -15,6 +15,7 @@ from configparser import ConfigParser
 from ollama import chat
 from ollama import ChatResponse
 
+# Defines methods that interface with the NAO
 class audiorecorder():
     def __init__(self, app):
         app.start()
@@ -48,8 +49,11 @@ if __name__ == "__main__":
                         help="NAO port")
     parser.add_argument("--model", choices=['gemini', 'deepseek', "gemma"], default="gemma", 
                         help="Choose an AI model for NAO to use")
-    parser.add_argument("--norobot", "-n", action='store_true', default=False, 
+    excluded = parser.add_mutually_exclusive_group(required=False)
+    excluded.add_argument("--norobot", "-n", action='store_true', default=False, 
                         help="Runs the script without connecting to the NAO robot")
+    excluded.add_argument("--nomic", "-m", action='store_true', default=False,
+                        help="Allows you to prompt the AI and for NAO to speak the response without the use of microphones")
 
 args = parser.parse_args()
 if args.norobot == False:
@@ -62,8 +66,6 @@ if args.norobot == False:
         print ("Can't connect to NAO at \"" + args.ip + "\" at port " + str(args.port) +".\n"
                "Please check your script arguments. Run with -h option for help.")
         exit(1)
-
-
 
 # AI response class
 class airesponse():
@@ -135,57 +137,65 @@ class airesponse():
             print(sub('[*]', " ", response))
             return(sub('[*]', " ", response))
 
+start_record = audiorecorder(app)
+
+def transcriber():
+    # Checks to see if mics are on
+    if args.nomic == True:
+        query = input()
+    else:
+        query = ""
+
+    if query == "": 
+        channels = [0, 0, 1, 0]
+        start_record.stopRecord()
+        start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
+        sleep(3)
+        start_record.stopRecord()
+        audfile = path.dirname(path.realpath(__file__))+"/request.wav"
+        # SCPs the file over to the host
+        sshcom = f"nao@{ipadd}:/home/nao/recordings/microphones/request.wav {audfile}"    
+        system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
+
+        # Transcribes using whisper
+        model = whisper.load_model("tiny")
+        query = model.transcribe(audfile)
+        print(query["text"])
+
+        ## If you want to use sphinx, uncomment this and comment out the openai code
+        # audfile = path.dirname(path.realpath(__file__))+"/request.wav"
+        # sp = sr.Recognizer()
+        # with sr.AudioFile(audfile) as sourceaud:
+        #         audio = sp.record(sourceaud)
+        # # Transcribes
+        # try:
+        #     prompt = sp.recognize_sphinx(audio)
+        #     print(prompt)
+        # except sr.UnknownValueError:
+        #     print("Sphinx could not understand audio")
+        # except sr.RequestError as e:
+        #     print("Sphinx error; {0}".format(e)
+    
+    # Make NAO say the response by calling the method corresponding to each model
+    start_record.speechTalk(airesponse(query))
+    sleep(1)
+
 # Checks if the no robot flag is on and runs depending on if it is
 if args.norobot == False:
-    try: 
+    while 1:
+        try: 
         # Loops the querying and responds
-        while 1:
-            start_record = audiorecorder(app)
-            channels = [0, 0, 1, 0]
+            transcriber()
+        except KeyboardInterrupt:
+            print("Exiting the program")
             start_record.stopRecord()
-            start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
-            sleep(3)
-            start_record.stopRecord()
-            audfile = path.dirname(path.realpath(__file__))+"/request.wav"
-            # SCPs the file over to the host
-            sshcom = f"nao@{ipadd}:/home/nao/recordings/microphones/request.wav {audfile}"    
-            system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
-            
-            # Transcribes using whisper
-            model = whisper.load_model("tiny")
-            prompt = model.transcribe(audfile)
-            print(prompt["text"])
-            
-            ## If you want to use sphinx, uncomment this and comment out the openai code
-            # audfile = path.dirname(path.realpath(__file__))+"/request.wav"
-            # sp = sr.Recognizer()
-            # with sr.AudioFile(audfile) as sourceaud:
-            #         audio = sp.record(sourceaud)
-            # # Transcribes
-            # try:
-            #     prompt = sp.recognize_sphinx(audio)
-            #     print(prompt)
-            # except sr.UnknownValueError:
-            #     print("Sphinx could not understand audio")
-            # except sr.RequestError as e:
-            #     print("Sphinx error; {0}".format(e))
-
-            
-
-            # Make NAO say the response by calling the method corresponding to each model
-            start_record.speechTalk(airesponse(prompt))
             sleep(1)
+            print("Stopping current recordings")
+            start_record.stopRecord()
+            print("Stopped")
+            exit()
 
-
-    except KeyboardInterrupt:
-        print("Exiting the program")
-        start_record.stopTalk()
-        sleep(1)
-        print("Stopping current recordings")
-        start_record.stopRecord()
-        print("Stopped")
-        exit()
-
+# If the no robot flag is on, run this
 if args.model == "gemini":
     airesponse().gemini(input("Enter the prompt: "))
 else:
