@@ -1,9 +1,9 @@
-import speech_recognition as sr
+# import speech_recognition as sr
 from requests import post
 from re import sub
 from re import DOTALL
-import qi
-import sys
+from qi import Application
+from sys import exit
 from time import sleep
 import argparse
 from whisper import load_model
@@ -27,7 +27,7 @@ class audiorecorder():
         except Exception as e:
             print("Could not connect to service")
             # traceback.print_exc()
-            sys.exit(1)
+            exit(1)
     def startRecord(self, filename, filetype, samplerate, channels):
         self.aas.startMicrophonesRecording(filename, filetype, samplerate, channels)
     def stopRecord(self):
@@ -36,7 +36,6 @@ class audiorecorder():
         self.tts.setLanguage("English")
         self.tts.say(reply)
 
-    
 
 # This connects to the NAO
 if __name__ == "__main__":
@@ -50,71 +49,68 @@ if __name__ == "__main__":
     parser.add_argument("--norobot", "-n", action='store_true', default=False, 
                         help="Runs the script without connecting to the NAO robot")
 
-    args = parser.parse_args()
-    if args.norobot == False:
-        try:
-            # Initialize qi framework.
-            connection_url = "tcp://" + args.ip + ":" + str(args.port)
-            ipadd = args.ip
-            app = qi.Application(["NAOAI", "--qi-url=" + connection_url])
-        except RuntimeError:
-            print ("Can't connect to NAO at \"" + args.ip + "\" at port " + str(args.port) +".\n"
-                   "Please check your script arguments. Run with -h option for help.")
-            sys.exit(1)
+args = parser.parse_args()
+if args.norobot == False:
+    try:
+        # Initialize qi framework.
+        connection_url = "tcp://" + args.ip + ":" + str(args.port)
+        ipadd = args.ip
+        app = Application(["NAOAI", "--qi-url=" + connection_url])
+    except RuntimeError:
+        print ("Can't connect to NAO at \"" + args.ip + "\" at port " + str(args.port) +".\n"
+               "Please check your script arguments. Run with -h option for help.")
+        exit(1)
 
 
 
 # AI response class
 class airesponse():
     def gemini(self, prompt):
-        if args.model == "gemini":
-            # Sets config variables
-            scriptpath = (path.dirname(path.realpath(__file__)))
-            configpath = scriptpath + "/config.ini"
-            config = ConfigParser()
-
-            # Get Gemini API key if it doesn't exist
-            if path.isfile(configpath) == True:
-                config.read(configpath)
-                api_key = config.get('Main', 'api_key')
-            else:
-                keysave = input("Set a Gemini API key: ")
-                config['Main'] = {'api_key': keysave}
-                with open(configpath, 'w') as configfile:
-                    config.write(configfile)
-                api_key = config.get('Main', 'api_key')
-
-            # Sends the data to Gemini
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={api_key}"
-            data = {
-                "system_instruction": {
-                    "parts": 
-                        {"text": "You are a robot named 'nao' responding to a human in a conversation"}
-                },
-                "contents": [{
-                "parts":[{"text": prompt}]
-                }],
-                "safetySettings": [
-                {
-                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                    "threshold": "BLOCK_ONLY_HIGH"
-                },
-                {
-                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                    "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-                }
-                ],
-               }
-            response = post(url, headers={'Content-Type': 'application/json'}, json=data)
-            # This is a debugging thingy
-            # print(response)
-            # This prints the result from Gemini
-            # It converts the json into actual text and then regex's all the * out
-            x = response.json()
-            content = (x["candidates"][0]["content"]["parts"][0]["text"]) 
-            print(sub('[*]', " ", content))
-            return content
-    def ollamaresponse(self, prompt):
+        # Sets config variables
+        scriptpath = (path.dirname(path.realpath(__file__)))
+        configpath = scriptpath + "/config.ini"
+        config = ConfigParser()
+        # Get Gemini API key if it doesn't exist
+        if path.isfile(configpath) == True:
+            config.read(configpath)
+            api_key = config.get('Main', 'api_key')
+        else:
+            keysave = input("Set a Gemini API key: ")
+            config['Main'] = {'api_key': keysave}
+            with open(configpath, 'w') as configfile:
+                config.write(configfile)
+            api_key = config.get('Main', 'api_key')
+        # Sends the data to Gemini
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={api_key}"
+        data = {
+            "system_instruction": {
+                "parts": 
+                    {"text": "You are a robot named 'nao' responding to a human in a conversation"}
+            },
+            "contents": [{
+            "parts":[{"text": prompt}]
+            }],
+            "safetySettings": [
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_ONLY_HIGH"
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            }
+            ],
+           }
+        response = post(url, headers={'Content-Type': 'application/json'}, json=data)
+        # This is a debugging thingy
+        # print(response)
+        # This prints the result from Gemini
+        # It converts the json into actual text and then regex's all the * out
+        x = response.json()
+        content = (x["candidates"][0]["content"]["parts"][0]["text"]) 
+        print(sub('[*]', " ", content))
+        return content
+    def ollama(self, prompt):
         if args.model == "deepseek":
             model = 'deepseek-r1:1.5b'
         else:
@@ -141,7 +137,7 @@ class airesponse():
 if args.norobot == False:
     try: 
         # Loops the querying and responds
-        while True:
+        while 1:
             start_record = audiorecorder(app)
             channels = [0, 0, 1, 0]
             start_record.stopRecord()
@@ -185,6 +181,9 @@ if args.norobot == False:
         print("Stopping current recordings")
         start_record.stopRecord()
         print("Stopped")
-        sys.exit()
+        exit()
+
+if args.model == "gemini":
+    airesponse().gemini(input("Enter the prompt: "))
 else:
-    airesponse().ollamaresponse(input("Enter the prompt: "))
+    airesponse().ollama(input("Enter the prompt: "))
