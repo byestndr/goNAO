@@ -6,8 +6,9 @@ import qi
 import sys
 import time
 import argparse
-import traceback
-import os
+# import traceback
+from os import path
+from os import system
 from configparser import ConfigParser
 from ollama import chat
 from ollama import ChatResponse
@@ -23,7 +24,7 @@ class audiorecorder():
             print("Connected to ALAudioRecorder and ALTextToSpeech service")
         except Exception as e:
             print("Could not connect to service")
-            traceback.print_exc()
+            # traceback.print_exc()
             sys.exit(1)
     def startRecord(self, filename, filetype, samplerate, channels):
         self.aas.startMicrophonesRecording(filename, filetype, samplerate, channels)
@@ -66,12 +67,12 @@ class airesponse():
     def gemini(self, prompt):
         if args.model == "gemini":
             # Sets config variables
-            scriptpath = (os.path.dirname(os.path.realpath(__file__)))
+            scriptpath = (path.dirname(path.realpath(__file__)))
             configpath = scriptpath + "/config.ini"
             config = ConfigParser()
 
             # Get Gemini API key if it doesn't exist
-            if os.path.isfile(configpath) == True:
+            if path.isfile(configpath) == True:
                 config.read(configpath)
                 api_key = config.get('Main', 'api_key')
             else:
@@ -115,7 +116,7 @@ class airesponse():
         if args.model == "deepseek":
             model = 'deepseek-r1:1.5b'
         else:
-            model = 'gemma2:2b'
+            model = 'naoGemma'
         
         response: ChatResponse = chat(model=model, messages=[
           {
@@ -143,27 +144,36 @@ if args.norobot == False:
             channels = [0, 0, 1, 0]
             start_record.stopRecord()
             start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
-            time.sleep(5)
+            time.sleep(3)
             start_record.stopRecord()
+            audfile = path.dirname(path.realpath(__file__))+"/request.wav"
             # SCPs the file over to the host
-            sshcom = f"nao@{ipadd}:/home/nao/recordings/microphones/request.wav /mnt/c/Users/Student/Documents/NAOAI/request.wav"    
-            os.system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
-            # Reads file
-            audfile = "/mnt/c/Users/Student/Documents/NAOAI/request.wav"
-            sp = sr.Recognizer()
-            with sr.AudioFile(audfile) as sourceaud:
-                    audio = sp.record(sourceaud)
-            # Transcribes
-            try:
-                prompt = sp.recognize_sphinx(audio)
-                print(prompt)
-            except sr.UnknownValueError:
-                print("Sphinx could not understand audio")
-            except sr.RequestError as e:
-                print("Sphinx error; {0}".format(e))
+            sshcom = f"nao@{ipadd}:/home/nao/recordings/microphones/request.wav {audfile}"    
+            system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
+            
+            # Transcribes using whisper
+            model = whisper.load_model("tiny")
+            prompt = model.transcribe(audfile)
+            print(prompt["text"])
+            
+            ## If you want to use sphinx, uncomment this and comment out the openai code
+            # audfile = path.dirname(path.realpath(__file__))+"/request.wav"
+            # sp = sr.Recognizer()
+            # with sr.AudioFile(audfile) as sourceaud:
+            #         audio = sp.record(sourceaud)
+            # # Transcribes
+            # try:
+            #     prompt = sp.recognize_sphinx(audio)
+            #     print(prompt)
+            # except sr.UnknownValueError:
+            #     print("Sphinx could not understand audio")
+            # except sr.RequestError as e:
+            #     print("Sphinx error; {0}".format(e))
 
-            # Make NAO say the response
-            start_record.speechTalk(sub('[*]', " ", airesponse(prompt)))
+            
+
+            # Make NAO say the response by calling the method corresponding to each model
+            start_record.speechTalk(airesponse(prompt))
             time.sleep(1)
 
 
