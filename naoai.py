@@ -62,6 +62,7 @@ if args.norobot == False:
         connection_url = "tcp://" + args.ip + ":" + str(args.port)
         ipadd = args.ip
         app = Application(["NAOAI", "--qi-url=" + connection_url])
+        start_record = audiorecorder(app)
     except RuntimeError:
         print ("Can't connect to NAO at \"" + args.ip + "\" at port " + str(args.port) +".\n"
                "Please check your script arguments. Run with -h option for help.")
@@ -135,9 +136,7 @@ class airesponse():
         else:
             response = response['message']['content']
             print(sub('[*]', " ", response))
-            return(sub('[*]', " ", response))
-
-start_record = audiorecorder(app)
+            return(sub('[*]', " ", response))        
 
 def transcriber():
     # Checks to see if mics are on
@@ -194,7 +193,7 @@ if args.norobot == False:
             start_record.stopRecord()
             print("Stopped")
             exit()
-
+            
 # If the no robot flag is on, run this
 if args.model == "gemini":
     airesponse().gemini(input("Enter the prompt: "))
