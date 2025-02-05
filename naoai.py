@@ -40,6 +40,7 @@ class audiorecorder():
         self.tts.stopAll()
 
 
+
 # This connects to the NAO
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -90,7 +91,7 @@ class airesponse():
         data = {
             "system_instruction": {
                 "parts": 
-                    {"text": "You are a robot named 'nao' responding to a human in a conversation"}
+                    {"text": "You are a robot named 'TJ' responding to a human in a conversation. Answer in 1-2 sentences. You'll also need to be opinionated."}
             },
             "contents": [{
             "parts":[{"text": prompt}]
@@ -149,7 +150,8 @@ def transcriber():
         channels = [0, 0, 1, 0]
         start_record.stopRecord()
         start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
-        sleep(3)
+        print("SPEAK NOW")
+        sleep(3.5)
         start_record.stopRecord()
         audfile = path.dirname(path.realpath(__file__))+"/request.wav"
         # SCPs the file over to the host
@@ -157,10 +159,10 @@ def transcriber():
         system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
 
         # Transcribes using whisper
-        model = whisper.load_model("tiny")
+        model = load_model("tiny")
         query = model.transcribe(audfile)
-        print(query["text"])
-
+        cleanedQuery = (query["text"])
+        print(cleanedQuery)
         ## If you want to use sphinx, uncomment this and comment out the openai code
         # audfile = path.dirname(path.realpath(__file__))+"/request.wav"
         # sp = sr.Recognizer()
@@ -176,7 +178,10 @@ def transcriber():
         #     print("Sphinx error; {0}".format(e)
     
     # Make NAO say the response by calling the method corresponding to each model
-    start_record.speechTalk(airesponse(query))
+    if args.model == "deepseek" or args.model == "gemma":
+        start_record.speechTalk(airesponse().ollama(cleanedQuery))
+    else:
+        start_record.speechTalk(airesponse().gemini(cleanedQuery))
     sleep(1)
 
 # Checks if the no robot flag is on and runs depending on if it is
@@ -187,7 +192,7 @@ if args.norobot == False:
             transcriber()
         except KeyboardInterrupt:
             print("Exiting the program")
-            start_record.stopRecord()
+            start_record.stopTalk()
             sleep(1)
             print("Stopping current recordings")
             start_record.stopRecord()
