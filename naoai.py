@@ -14,6 +14,7 @@ from os import system
 from configparser import ConfigParser
 from ollama import chat
 from ollama import ChatResponse
+from stoptts import stoptts
 
 # Defines methods that interface with the NAO
 class audiorecorder():
@@ -23,7 +24,7 @@ class audiorecorder():
         # Connect to the services
         try:
             self.aas = session.service("ALAudioRecorder")
-            self.tts= session.service("ALTextToSpeech")
+            self.tts = session.service("ALTextToSpeech")
             print("Connected to ALAudioRecorder and ALTextToSpeech service")
         except Exception as e:
             print("Could not connect to service")
@@ -38,8 +39,6 @@ class audiorecorder():
         self.tts.say(reply)
     def stopTalk(self):
         self.tts.stopAll()
-
-
 
 # This connects to the NAO
 if __name__ == "__main__":
@@ -137,7 +136,7 @@ class airesponse():
         else:
             response = response['message']['content']
             print(sub('[*]', " ", response))
-            return(sub('[*]', " ", response))        
+            return(sub('[*]', " ", response))
 
 def transcriber():
     # Checks to see if mics are on
@@ -163,6 +162,7 @@ def transcriber():
         query = model.transcribe(audfile)
         cleanedQuery = (query["text"])
         print(cleanedQuery)
+
         ## If you want to use sphinx, uncomment this and comment out the openai code
         # audfile = path.dirname(path.realpath(__file__))+"/request.wav"
         # sp = sr.Recognizer()
@@ -179,10 +179,12 @@ def transcriber():
     
     # Make NAO say the response by calling the method corresponding to each model
     if args.model == "deepseek" or args.model == "gemma":
-        start_record.speechTalk(airesponse().ollama(cleanedQuery))
+        reply = airesponse().ollama(cleanedQuery)
     else:
-        start_record.speechTalk(airesponse().gemini(cleanedQuery))
-    sleep(1)
+        reply = airesponse().gemini(cleanedQuery)
+    
+    # Creates talking process
+    start_record.speechTalk(reply)
 
 # Checks if the no robot flag is on and runs depending on if it is
 if args.norobot == False:
@@ -191,8 +193,11 @@ if args.norobot == False:
         # Loops the querying and responds
             transcriber()
         except KeyboardInterrupt:
+            # Hopefully stops the TTS???
+            exittts = stoptts(app)
+            exittts.stopTalk
+
             print("Exiting the program")
-            start_record.stopTalk()
             sleep(1)
             print("Stopping current recordings")
             start_record.stopRecord()
