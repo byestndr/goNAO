@@ -14,7 +14,6 @@ from os import system
 from configparser import ConfigParser
 from ollama import chat
 from ollama import ChatResponse
-from stoptts import stoptts
 
 # Defines methods that interface with the NAO
 class audiorecorder():
@@ -26,6 +25,7 @@ class audiorecorder():
             self.aas = session.service("ALAudioRecorder")
             self.tts = session.service("ALTextToSpeech")
             print("Connected to ALAudioRecorder and ALTextToSpeech service")
+            self.tts.setVoice("naomnc")
         except Exception as e:
             print("Could not connect to service")
             # traceback.print_exc()
@@ -150,7 +150,7 @@ def transcriber():
         start_record.stopRecord()
         start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
         print("SPEAK NOW")
-        sleep(3.5)
+        sleep(5)
         start_record.stopRecord()
         audfile = path.dirname(path.realpath(__file__))+"/request.wav"
         # SCPs the file over to the host
@@ -158,10 +158,11 @@ def transcriber():
         system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
 
         # Transcribes using whisper
+        print("Transcribing...")
         model = load_model("tiny")
         query = model.transcribe(audfile)
         cleanedQuery = (query["text"])
-        print(cleanedQuery)
+        print("\nWhisper thinks you said: "+cleanedQuery)
 
         ## If you want to use sphinx, uncomment this and comment out the openai code
         # audfile = path.dirname(path.realpath(__file__))+"/request.wav"
@@ -193,9 +194,6 @@ if args.norobot == False:
         # Loops the querying and responds
             transcriber()
         except KeyboardInterrupt:
-            # Hopefully stops the TTS???
-            exittts = stoptts(app)
-            exittts.stopTalk
 
             print("Exiting the program")
             sleep(1)
