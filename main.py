@@ -1,8 +1,9 @@
 import argparse
 import sys
-import naoai
-import walkingnao
-
+from walkingnao import buttonpresses
+from walkingnao import walk
+from naoai import stoptts
+import multiprocessing
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -13,12 +14,23 @@ if __name__ == "__main__":
     parser.add_argument("--model", choices=['gemini', 'deepseek', "gemma"], default="gemma", 
                         help="Choose an AI model for NAO to use")
     excluded = parser.add_mutually_exclusive_group(required=False)
-    excluded.add_argument("--norobot", "-n", action='store_true', default=False, 
-                        help="Runs the script without connecting to the NAO robot")
-    excluded.add_argument("--nomic", "-m", action='store_true', default=False,
-                        help="Allows you to prompt the AI and for NAO to speak the response without the use of microphones")
 else:
     raise RuntimeError("Script must be run as main")
     sys.exit(1)
 
+
 args = parser.parse_args()
+
+# Defines processes
+walk.connection_details.runFromMain(args.ip, args.port)
+
+buttonDetector = multiprocessing.Process(target=buttonpresses.controllerButtons, args=(args.ip, args.port, args.model))
+walker = multiprocessing.Process(target=walk.controllerWalk)
+
+# Starts Processes
+try:
+    buttonDetector.start()
+    walker.start()
+except KeyboardInterrupt:
+    stoptts.connection_details(args.ip, args.port)
+    stoptts.end()

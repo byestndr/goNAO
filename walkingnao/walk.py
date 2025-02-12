@@ -5,7 +5,6 @@ import argparse
 from time import sleep
 import traceback
 import multiprocessing
-import naoai
 
 isStarted = 0
 
@@ -45,22 +44,31 @@ class walk():
         self.pos.goToPosture("StandInit", 0.6)
 
 # Argument Parser
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ip", type=str, default="127.0.0.1",
-                        help="IP address for the NAO robot. Cannot be a simulated robot as they are not supported")
-    parser.add_argument("--port", type=int, default=9559,
-                        help="NAO port")
+class connection_details():
+    def runFromCurrent():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--ip", type=str, default="127.0.0.1",
+                            help="IP address for the NAO robot. Cannot be a simulated robot as they are not supported")
+        parser.add_argument("--port", type=int, default=9559,
+                            help="NAO port")
+        global ip, port
+        args = parser.parse_args()
+        ip, port = args.ip, args.port
 
-args = parser.parse_args()
+    def runFromMain(ipadd, portnum):
+        global ip, port, model, norobot, nomic
+        ip, port = ipadd, portnum
+
+if __name__ == "__main__":
+    connection_details.runFromCurrent()
 
 try:
     # Initialize qi framework.
-    connection_url = "tcp://" + args.ip + ":" + str(args.port)
+    connection_url = "tcp://" + ip + ":" + str(port)
     app = Application(["NAOAI", "--qi-url=" + connection_url])
     walking = walk(app)
 except RuntimeError:
-    print ("Can't connect to NAO at \"" + args.ip + "\" at port " + str(args.port) +".\n"
+    print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
         "Please check your script arguments. Run with -h option for help.")
     exit(1)
 
@@ -111,25 +119,5 @@ def controllerWalk():
             walking.stopMove()
         sleep(0.6)
 
-def controllerButtons():
-    while done == False:
-        # Cross
-        if controller.buttonStat(0) == 1:
-            pass
-        # Circle
-        elif controller.buttonStat(1) == 1:
-            pass
-        # Square
-        elif controller.buttonStat(2) == 1:
-            pass
-        # Triangle
-        elif controller.buttonStat(3) == 1:
-            # likely going to be the AI button
-            pass
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True    
-
-walkTheBot = multiprocessing.Process(target=controllerWalk)
-buttonCommand = multiprocessing.Process(target=controllerButtons)
+if __name__ == "__main__":
+    controllerWalk()

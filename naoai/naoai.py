@@ -1,4 +1,5 @@
 # import speech_recognition as sr
+print("Initializing modules...")
 from requests import post
 from re import sub
 from re import DOTALL
@@ -41,30 +42,40 @@ class audiorecorder():
         self.tts.stopAll()
 
 # This connects to the NAO
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ip", type=str, default="127.0.0.1",
-                        help="IP address for the NAO robot. Cannot be a simulated robot as they are not supported")
-    parser.add_argument("--port", type=int, default=9559,
-                        help="NAO port")
-    parser.add_argument("--model", choices=['gemini', 'deepseek', "gemma"], default="gemma", 
-                        help="Choose an AI model for NAO to use")
-    excluded = parser.add_mutually_exclusive_group(required=False)
-    excluded.add_argument("--norobot", "-n", action='store_true', default=False, 
-                        help="Runs the script without connecting to the NAO robot")
-    excluded.add_argument("--nomic", "-m", action='store_true', default=False,
-                        help="Allows you to prompt the AI and for NAO to speak the response without the use of microphones")
+class connection_details():
+    def runFromCurrent():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--ip", type=str, default="127.0.0.1",
+                            help="IP address for the NAO robot. Cannot be a simulated robot as they are not supported")
+        parser.add_argument("--port", type=int, default=9559,
+                            help="NAO port")
+        parser.add_argument("--model", choices=['gemini', 'deepseek', "gemma"], default="gemma", 
+                            help="Choose an AI model for NAO to use")
+        excluded = parser.add_mutually_exclusive_group(required=False)
+        excluded.add_argument("--norobot", "-n", action='store_true', default=False, 
+                            help="Runs the script without connecting to the NAO robot")
+        excluded.add_argument("--nomic", "-m", action='store_true', default=False,
+                            help="Allows you to prompt the AI and for NAO to speak the response without the use of microphones")
+        global ip, port, model, norobot, nomic
+        args = parser.parse_args()
+        ip, port, model, norobot, nomic = args.ip, args.port, args.model, args.norobot, args.nomic
 
-args = parser.parse_args()
-if args.norobot == False:
+    def runFromMain(ipadd, portnum, modelname):
+        global ip, port, model, norobot, nomic
+        ip, port, model, norobot, nomic = ipadd, portnum, modelname, False, False
+
+if __name__ == "__main__":
+    connection_details.runFromCurrent()
+
+if norobot == False:
     try:
         # Initialize qi framework.
-        connection_url = "tcp://" + args.ip + ":" + str(args.port)
-        ipadd = args.ip
+        connection_url = "tcp://" + ip + ":" + str(port)
+        ipadd = ip
         app = Application(["NAOAI", "--qi-url=" + connection_url])
         start_record = audiorecorder(app)
     except RuntimeError:
-        print ("Can't connect to NAO at \"" + args.ip + "\" at port " + str(args.port) +".\n"
+        print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                "Please check your script arguments. Run with -h option for help.")
         exit(1)
 
@@ -116,7 +127,7 @@ class airesponse():
         print(sub('[*]', " ", content))
         return content
     def ollama(self, prompt):
-        if args.model == "deepseek":
+        if model == "deepseek":
             model = 'deepseek-r1:1.5b'
         else:
             model = 'naoGemma'
@@ -128,7 +139,7 @@ class airesponse():
           },
         ])
         
-        if args.model == "deepseek":
+        if model == "deepseek":
             response = response['message']['content']
             nothink = sub(r"<think>.*?</think>\n?", "", response, flags=DOTALL) 
             print(nothink)
@@ -140,7 +151,7 @@ class airesponse():
 
 def transcriber():
     # Checks to see if mics are on
-    if args.nomic == True:
+    if nomic == True:
         query = input()
     else:
         query = ""
@@ -179,7 +190,7 @@ def transcriber():
         #     print("Sphinx error; {0}".format(e)
     
     # Make NAO say the response by calling the method corresponding to each model
-    if args.model == "deepseek" or args.model == "gemma":
+    if model == "deepseek" or model == "gemma":
         reply = airesponse().ollama(cleanedQuery)
     else:
         reply = airesponse().gemini(cleanedQuery)
@@ -188,7 +199,7 @@ def transcriber():
     start_record.speechTalk(reply)
 
 # Checks if the no robot flag is on and runs depending on if it is
-if args.norobot == False:
+if norobot == False and __name__ == "__main__":
     while 1:
         try: 
         # Loops the querying and responds
@@ -203,7 +214,7 @@ if args.norobot == False:
             exit()
             
 # If the no robot flag is on, run this
-if args.model == "gemini":
+if model == "gemini" and __name__ == "__main__":
     airesponse().gemini(input("Enter the prompt: "))
 else:
     airesponse().ollama(input("Enter the prompt: "))
