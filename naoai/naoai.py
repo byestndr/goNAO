@@ -174,20 +174,6 @@ def transcriber():
         query = model.transcribe(audfile)
         cleanedQuery = (query["text"])
         print("\nWhisper thinks you said: "+cleanedQuery)
-
-        ## If you want to use sphinx, uncomment this and comment out the openai code
-        # audfile = path.dirname(path.realpath(__file__))+"/request.wav"
-        # sp = sr.Recognizer()
-        # with sr.AudioFile(audfile) as sourceaud:
-        #         audio = sp.record(sourceaud)
-        # # Transcribes
-        # try:
-        #     prompt = sp.recognize_sphinx(audio)
-        #     print(prompt)
-        # except sr.UnknownValueError:
-        #     print("Sphinx could not understand audio")
-        # except sr.RequestError as e:
-        #     print("Sphinx error; {0}".format(e)
     
     # Make NAO say the response by calling the method corresponding to each model
     if model == "deepseek" or model == "gemma":
