@@ -149,49 +149,57 @@ class airesponse():
             print(sub('[*]', " ", response))
             return(sub('[*]', " ", response))
 
-def transcriber():
-    # Checks to see if mics are on
-    if nomic == True:
-        query = input()
-    else:
-        query = ""
+class transcriber():
+    def queryingOn():
+        # Checks to see if mics are on
+        if nomic == True:
+            self.query = input("Enter the query: ")
+        else:
+            self.query = ""
 
-    if query == "": 
-        channels = [0, 0, 1, 0]
-        start_record.stopRecord()
-        start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
-        print("SPEAK NOW")
-        sleep(5)
-        start_record.stopRecord()
-        audfile = path.dirname(path.realpath(__file__))+"/request.wav"
-        # SCPs the file over to the host
-        sshcom = f"nao@{ipadd}:/home/nao/recordings/microphones/request.wav {audfile}"    
-        system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
+        if self.query == "": 
+            channels = [0, 0, 1, 0]
+            start_record.stopRecord()
+            start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
+            print("SPEAK NOW")            
+    def queryingOff():
+        if self.query == "":
+            start_record.stopRecord()
+            self.audfile = path.dirname(path.realpath(__file__))+"/request.wav"
+            # SCPs the file over to the host
+            sshcom = f"nao@{ipadd}:/home/nao/recordings/microphones/request.wav {audfile}"    
+            system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
 
+    def transcribing(self):
         # Transcribes using whisper
-        print("Transcribing...")
-        model = load_model("tiny")
-        query = model.transcribe(audfile)
-        cleanedQuery = (query["text"])
-        print("\nWhisper thinks you said: "+cleanedQuery)
-    
-    # Make NAO say the response by calling the method corresponding to each model
-    if model == "deepseek" or model == "gemma":
-        reply = airesponse().ollama(cleanedQuery)
-    else:
-        reply = airesponse().gemini(cleanedQuery)
-    
-    # Creates talking process
-    start_record.speechTalk(reply)
+        if nomic == False:
+            print("Transcribing...")
+            model = load_model("tiny")
+            query = model.transcribe(self.audfile)
+            cleanedQuery = (query["text"])
+            print("\nWhisper thinks you said: "+cleanedQuery)
+        else:
+            cleanedQuery = self.query
+
+        # Make NAO say the response by calling the method corresponding to each model
+        if model == "deepseek" or model == "gemma":
+            reply = airesponse().ollama(cleanedQuery)
+        else:
+            reply = airesponse().gemini(cleanedQuery)
+
+        # Creates talking process
+        start_record.speechTalk(reply)
 
 # Checks if the no robot flag is on and runs depending on if it is
 if norobot == False and __name__ == "__main__":
     while 1:
         try: 
         # Loops the querying and responds
-            transcriber()
+            transcriber.queryingOn()
+            sleep(5)
+            transcriber.queryingOff()
+            transcriber.transcribing()
         except KeyboardInterrupt:
-
             print("Exiting the program")
             sleep(1)
             print("Stopping current recordings")

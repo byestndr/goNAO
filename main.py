@@ -25,11 +25,13 @@ args = parser.parse_args()
 walk.connection_details.runFromMain(args.ip, args.port)
 
 buttonDetector = multiprocessing.Process(target=buttonpresses.controllerButtons, args=(args.ip, args.port, args.model))
+naoTranscribeOff = multiprocessing.Process(target=buttonpresses.OnAiOff, args=(args.ip, args.port, args.model))
 walker = multiprocessing.Process(target=walk.controllerWalk)
 
 # Starts Processes
 try:
     buttonDetector.start()
+    naoTranscribeOff.start()
     walker.start()
 except KeyboardInterrupt:
     stoptts.connection_details(args.ip, args.port)
