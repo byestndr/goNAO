@@ -58,6 +58,7 @@ class connection_details():
     def runFromMain(ipadd, portnum):
         global ip, port, model, norobot, nomic
         ip, port = ipadd, portnum
+        controllerWalk()
 
 if __name__ == "__main__":
     connection_details.runFromCurrent()

@@ -17,24 +17,22 @@ def controllerButtons(ip, port, model):
         # Triangle
         elif joytest.controller.buttonStat(3) == 1:
             # The AI button
-            naoai.connection_details.runFromMain(ip, port, model)
             global started
             started = 1
             print("Starting AI")
-            naoai.transcriber.queryingOn()
-            print("Exited AI")
+            naoai.connection_details.runFromMainStart(ip, port, model)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
 
-def OnAiOff():
+def OnAiOff(ip, port, model):
     done == False
     while done == False:
         if joytest.controller.buttonStat(3) == 1 and started == 1:
-            naoai.connection_details.runFromMain(ip, port, model)
-            naoai.transcriber.queryingOff()
-            naoai.transcriber.transcribing()
+            naoai.connection_details.runFromMainStop(ip, port, model)
+            global started
+            started = 0
             
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
