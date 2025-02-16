@@ -1,6 +1,6 @@
 import argparse
 import sys
-from walkingnao import buttonpresses
+import buttonpresses
 from walkingnao import walk
 from naoai import stoptts
 import multiprocessing
@@ -13,7 +13,6 @@ if __name__ == "__main__":
                         help="NAO port")
     parser.add_argument("--model", choices=['gemini', 'deepseek', "gemma"], default="gemma", 
                         help="Choose an AI model for NAO to use")
-    excluded = parser.add_mutually_exclusive_group(required=False)
 else:
     raise RuntimeError("Script must be run as main")
     sys.exit(1)
@@ -22,9 +21,9 @@ else:
 args = parser.parse_args()
 
 # Defines processes
-
-buttonDetector = multiprocessing.Process(target=buttonpresses.controllerButtons, args=(args.ip, args.port, args.model))
-naoTranscribeOff = multiprocessing.Process(target=buttonpresses.OnAiOff, args=(args.ip, args.port, args.model))
+multiprocessing.freeze_support()
+buttonDetector = multiprocessing.Process(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model))
+naoTranscribeOff = multiprocessing.Process(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, args.model))
 walker = multiprocessing.Process(target=walk.connection_details.runFromMain, args=(args.ip, args.port))
 
 # Starts Processes

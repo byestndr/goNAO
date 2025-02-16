@@ -4,7 +4,6 @@ import pygame
 import argparse
 from time import sleep
 import traceback
-import multiprocessing
 
 isStarted = 0
 
@@ -92,13 +91,15 @@ def controllerWalk():
         # Checks if Z axis is being used
         if z > 0 or z < 0:
             x, y = 0, 0
-
+        
+        # Only uses one axis at a time
         if abs(x) > abs(y):
             y = 0
         elif abs(y) > abs(x):
             x = 0
-        else: 
-            pass
+        elif abs(y) == abs(x):
+            x, y = 0, 0 
+            
         
         # Prints values out for debugging
         print(x, y, z)
