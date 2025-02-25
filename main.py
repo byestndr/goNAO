@@ -1,9 +1,9 @@
 import argparse
-import sys
+from sys import exit
 import buttonpresses
 from walkingnao import walk
 from naoai import stoptts
-import multiprocessing
+import threading
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -15,21 +15,23 @@ if __name__ == "__main__":
                         help="Choose an AI model for NAO to use")
 else:
     raise RuntimeError("Script must be run as main")
-    sys.exit(1)
-
+    exit(1)
 
 args = parser.parse_args()
 
+# Sets started variable for the button detector
+started = threading.Event()
+started.clear()
+
 # Defines processes
-multiprocessing.freeze_support()
-buttonDetector = multiprocessing.Process(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model))
-naoTranscribeOff = multiprocessing.Process(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, args.model))
-walker = multiprocessing.Process(target=walk.connection_details.runFromMain, args=(args.ip, args.port))
+buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model, started))
+naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, args.model, started))
+walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port))
 
 # Starts Processes
 try:
+    walker.start()
     buttonDetector.start()
     naoTranscribeOff.start()
-    walker.start()
 except KeyboardInterrupt:
     stoptts.connection_details.runFromMain(args.ip, args.port)

@@ -74,7 +74,7 @@ class connection_details():
 if __name__ == "__main__":
     connection_details.runFromCurrent()
 
-if norobot == False:
+if __name__ == "__main__" and norobot == False:
     try:
         # Initialize qi framework.
         connection_url = "tcp://" + ip + ":" + str(port)
@@ -198,7 +198,7 @@ class transcriber():
         start_record.speechTalk(reply)
 
 # Checks if the no robot flag is on and runs depending on if it is
-if norobot == False and __name__ == "__main__":
+if __name__ == "__main__" and norobot == False:
     while 1:
         try: 
         # Loops the querying and responds
@@ -215,7 +215,11 @@ if norobot == False and __name__ == "__main__":
             exit()
             
 # If the no robot flag is on, run this
-if model == "gemini" and __name__ == "__main__":
+if __name__ == "__main__" and model == "gemini":
     airesponse().gemini(input("Enter the prompt: "))
-else:
+elif __name__ == "__main__" and model == "deepseek":
     airesponse().ollama(input("Enter the prompt: "))
+elif __name__ == "__main__" and model == "gemma":
+    airesponse().ollama(input("Enter the prompt: "))
+else:
+    pass

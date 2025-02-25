@@ -1,11 +1,10 @@
 from qi import Application
-import joytest
+from walkingnao import joytest
 import pygame
 import argparse
 from time import sleep
 import traceback
 
-isStarted = 0
 
 # Services and robot interfacing class
 class walk():
@@ -24,7 +23,8 @@ class walk():
             exit(1)
     def walkto(self, x, y, z):
         # Slows down the movement to prevent falls
-        self.loco.moveToward(x * -0.7, y * -0.7, z * -0.7)
+        xax, yax, zax = x * -0.7, y * -0.7, z * -0.7
+        self.loco.moveToward(xax, yax, zax)
     def start(self, started):
         if started == 0:
             self.pos.goToPosture("StandInit", 0.5)
@@ -34,7 +34,7 @@ class walk():
         self.loco.stopMove()
     # Subscribes to robot fallen event and sees if robot falls
     def hasFallen(self):
-        if self.mem.subscriber("robotHasFallen") != True:
+        if self.mem.subscriber("robotHasFallen") == True:
             return True
     # Attempts to recover robot
     def recover(self):
@@ -53,27 +53,41 @@ class connection_details():
         global ip, port
         args = parser.parse_args()
         ip, port = args.ip, args.port
+        
+        try:
+            # Initialize qi framework.
+            connection_url = "tcp://" + ip + ":" + str(port)
+            global walking
+            app = Application(["NAOAI", "--qi-url=" + connection_url])
+            walking = walk(app)
+        except RuntimeError:
+            print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
+                "Please check your script arguments. Run with -h option for help.")
+            exit(1)
 
     def runFromMain(ipadd, portnum):
         global ip, port, model, norobot, nomic
         ip, port = ipadd, portnum
-        controllerWalk()
+        
+        try:
+            # Initialize qi framework.
+            connection_url = "tcp://" + ip + ":" + str(port)
+            global walking
+            app = Application(["NAOAI", "--qi-url=" + connection_url])
+            walking = walk(app)
+        except RuntimeError:
+            print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
+                "Please check your script arguments. Run with -h option for help.")
+            exit(1)
 
+        controllerWalk(0)
+        
+        
 if __name__ == "__main__":
     connection_details.runFromCurrent()
 
-try:
-    # Initialize qi framework.
-    connection_url = "tcp://" + ip + ":" + str(port)
-    app = Application(["NAOAI", "--qi-url=" + connection_url])
-    walking = walk(app)
-except RuntimeError:
-    print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
-        "Please check your script arguments. Run with -h option for help.")
-    exit(1)
-
 # Controller walking function
-def controllerWalk():
+def controllerWalk(isStarted):
     done = False
     while done == False:
 
@@ -102,24 +116,26 @@ def controllerWalk():
             
         
         # Prints values out for debugging
-        print(x, y, z)
+        print(x * -0.7, y * -0.7, z * -0.7)
 
         # Checks if app has been initialized yet and initalizes
         walking.start(isStarted)
         isStarted = 1
 
-        # Pygame listener
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-
-        # Controller code
-        if x != 0 and y != 0 and z != 0:
+        # Walks robot
+        if x != 0 or y != 0 or z != 0:
             walking.walkto(x, y, z)
         elif x == 0 and y == 0 and z == 0:
             print("No movement")
             walking.stopMove()
-        sleep(0.6)
+        
+        # Pygame listener
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                print("Done")
+                done = True
+
+        sleep(0.4)
 
 if __name__ == "__main__":
-    controllerWalk()
+    controllerWalk(0)
