@@ -63,13 +63,26 @@ class connection_details():
     def runFromMainStart(ipadd, portnum, modelname):
         global ip, port, model, norobot, nomic
         ip, port, model, norobot, nomic = ipadd, portnum, modelname, False, False
-        transcriber.queryingOn()
+        try:
+            # Initialize qi framework.
+            global ipaddr, app, start_record
+            connection_url = "tcp://" + ip + ":" + str(port)
+            ipaddr = ip
+            app = Application(["NAOAI", "--qi-url=" + connection_url])
+            start_record = audiorecorder(app)
+            print(start_record)
+
+        except RuntimeError:
+            print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
+                   "Please check your script arguments. Run with -h option for help.")
+            exit(1)
+        transcriber().queryingOn()
+
     def runFromMainStop(ipadd, portnum, modelname):
         global ip, port, model, norobot, nomic
         ip, port, model, norobot, nomic = ipadd, portnum, modelname, False, False
-        # If this doesn't work, move it further down
-        transcriber.queryingOff()
-        transcriber.transcribing()
+        transcriber().queryingOff()
+        transcriber().transcribing()
 
 if __name__ == "__main__":
     connection_details.runFromCurrent()
@@ -78,7 +91,7 @@ if __name__ == "__main__" and norobot == False:
     try:
         # Initialize qi framework.
         connection_url = "tcp://" + ip + ":" + str(port)
-        ipadd = ip
+        ipaddr = ip
         app = Application(["NAOAI", "--qi-url=" + connection_url])
         start_record = audiorecorder(app)
     except RuntimeError:
@@ -174,7 +187,7 @@ class transcriber():
             start_record.stopRecord()
             self.audfile = path.dirname(path.realpath(__file__))+"/request.wav"
             # SCPs the file over to the host
-            sshcom = f"nao@{ipadd}:/home/nao/recordings/microphones/request.wav {self.audfile}"    
+            sshcom = f"nao@{ipaddr}:/home/nao/recordings/microphones/request.wav {self.audfile}"    
             system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
 
     def transcribing(self):

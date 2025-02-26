@@ -23,7 +23,7 @@ class walk():
             exit(1)
     def walkto(self, x, y, z):
         # Slows down the movement to prevent falls
-        xax, yax, zax = x * -0.7, y * -0.7, z * -0.7
+        xax, yax, zax = x * -0.9, y * -0.9, z * -0.9
         self.loco.moveToward(xax, yax, zax)
     def start(self, started):
         if started == 0:
@@ -92,8 +92,11 @@ def controllerWalk(isStarted):
     while done == False:
 
         # If the robot falls, it should automatically recover
+        # ROBOT DOES NOT RECOVER PLEASE FIX
+        # MAKE CONTROLLER BUTTON
         if walking.hasFallen() == True:
-            walking.recover()
+            print("FALLEN")
+        walking.recover()
 
         # Gets position for x and y axes on the left stick
         # Controller Axes
@@ -116,7 +119,7 @@ def controllerWalk(isStarted):
             
         
         # Prints values out for debugging
-        print(x * -0.7, y * -0.7, z * -0.7)
+        print(x * -0.8, y * -0.8, z * -0.8)
 
         # Checks if app has been initialized yet and initalizes
         walking.start(isStarted)
@@ -135,7 +138,7 @@ def controllerWalk(isStarted):
                 print("Done")
                 done = True
 
-        sleep(0.4)
+        sleep(0.1)
 
 if __name__ == "__main__":
     controllerWalk(0)
