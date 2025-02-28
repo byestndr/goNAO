@@ -1,46 +1,10 @@
+from naoai import qiapi
 from qi import Application
 from walkingnao import joytest
 import pygame
 import argparse
 from time import sleep
 import traceback
-
-
-# Services and robot interfacing class
-class walk():
-    def __init__(self, app):
-        app.start()
-        session = app.session
-        # Connect to the services
-        try:
-            self.loco = session.service("ALMotion")
-            self.pos = session.service("ALRobotPosture")
-            self.mem = session.service("ALMemory")
-            print("Connected to the Motion and Posture services")
-        except Exception as e:
-            print("Could not connect to service")
-            traceback.print_exc()
-            exit(1)
-    def walkto(self, x, y, z):
-        # Slows down the movement to prevent falls
-        xax, yax, zax = x * -0.9, y * -0.9, z * -0.9
-        self.loco.moveToward(xax, yax, zax)
-    def start(self, started):
-        if started == 0:
-            self.pos.goToPosture("StandInit", 0.5)
-            self.loco.wakeUp()
-            self.loco.moveInit()
-    def stopMove(self):
-        self.loco.stopMove()
-    # Subscribes to robot fallen event and sees if robot falls
-    def hasFallen(self):
-        if self.mem.subscriber("robotHasFallen") == True:
-            return True
-    # Attempts to recover robot
-    def recover(self):
-        self.pos.goToPosture("LyingBack", 0.6)
-        self.pos.goToPosture("Sit", 0.6)
-        self.pos.goToPosture("StandInit", 0.6)
 
 # Argument Parser
 class connection_details():
@@ -59,27 +23,26 @@ class connection_details():
             connection_url = "tcp://" + ip + ":" + str(port)
             global walking
             app = Application(["NAOAI", "--qi-url=" + connection_url])
-            walking = walk(app)
+            walking = qiapi.qiservice(app)
         except RuntimeError:
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                 "Please check your script arguments. Run with -h option for help.")
             exit(1)
 
-    def runFromMain(ipadd, portnum):
+    def runFromMain(ipadd, portnum, qistarted):
         global ip, port, model, norobot, nomic
         ip, port = ipadd, portnum
         
         try:
             # Initialize qi framework.
-            connection_url = "tcp://" + ip + ":" + str(port)
+            print("Hello")
             global walking
-            app = Application(["NAOAI", "--qi-url=" + connection_url])
-            walking = walk(app)
+            walking = qiapi.qiservice(ip, port, qistarted)
         except RuntimeError:
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                 "Please check your script arguments. Run with -h option for help.")
             exit(1)
-
+        print("Starting walk")
         controllerWalk(0)
         
         
@@ -96,7 +59,7 @@ def controllerWalk(isStarted):
         # MAKE CONTROLLER BUTTON
         if walking.hasFallen() == True:
             print("FALLEN")
-        walking.recover()
+            walking.recover()
 
         # Gets position for x and y axes on the left stick
         # Controller Axes
@@ -122,7 +85,7 @@ def controllerWalk(isStarted):
         print(x * -0.8, y * -0.8, z * -0.8)
 
         # Checks if app has been initialized yet and initalizes
-        walking.start(isStarted)
+        walking.initMove(isStarted)
         isStarted = 1
 
         # Walks robot

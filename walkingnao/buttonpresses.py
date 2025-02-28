@@ -1,7 +1,9 @@
 from naoai import naoai
-from walkingnao import joytest
+from . import joytest
+from . import walk
 import pygame
-from walkingnao import walk
+from naoai import qiapi
+
 # from multiprocessing import Value
 import threading
 from time import sleep
@@ -10,7 +12,7 @@ from time import sleep
 
 
 class joybutton():
-    def controllerButtons(self, ip, port, model, started):
+    def controllerButtons(self, ip, port, model, started, qistarted):
         done = False
         while done == False:
             # Cross
@@ -18,7 +20,7 @@ class joybutton():
                 pass
             # Circle
             elif joytest.controller.buttonStat(1) == 1:
-                walk.walk().recover()
+                qiapi.qiservice(ip, port, qistarted).recover()
             # Square
             elif joytest.controller.buttonStat(2) == 1:
                 pass
@@ -27,18 +29,18 @@ class joybutton():
                 # The AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
-                naoai.connection_details.runFromMainStart(ip, port, model)
+                naoai.connection_details.runFromMainStart(ip, port, model, qistarted)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
 
-    def OnAiOff(self, ip, port, model, started):
+    def OnAiOff(self, ip, port, model, started, qistarted):
         done = False
         while done == False:
             if joytest.controller.buttonStat(1) == 1 and started.is_set() == True:
                 print("Stopping Mics")
-                naoai.connection_details.runFromMainStop(ip, port, model)
+                naoai.connection_details.runFromMainStop(ip, port, model, qistarted)
                 started.clear()
             else:
                 pass

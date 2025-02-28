@@ -3,6 +3,7 @@ print("Initializing modules...")
 from requests import post
 from re import sub
 from re import DOTALL
+from .qiapi import qiservice
 from qi import Application
 from sys import exit
 from time import sleep
@@ -12,34 +13,35 @@ from whisper import transcribe
 # import traceback
 from os import path
 from os import system
+import paramiko
 from configparser import ConfigParser
 from ollama import chat
 from ollama import ChatResponse
 
 # Defines methods that interface with the NAO
-class audiorecorder():
-    def __init__(self, app):
-        app.start()
-        session = app.session
-        # Connect to the services
-        try:
-            self.aas = session.service("ALAudioRecorder")
-            self.tts = session.service("ALTextToSpeech")
-            print("Connected to ALAudioRecorder and ALTextToSpeech service")
-            self.tts.setVoice("naomnc")
-        except Exception as e:
-            print("Could not connect to service")
-            # traceback.print_exc()
-            exit(1)
-    def startRecord(self, filename, filetype, samplerate, channels):
-        self.aas.startMicrophonesRecording(filename, filetype, samplerate, channels)
-    def stopRecord(self):
-        self.aas.stopMicrophonesRecording()
-    def speechTalk(self, reply):
-        self.tts.setLanguage("English")
-        self.tts.say(reply)
-    def stopTalk(self):
-        self.tts.stopAll()
+# class audiorecorder():
+#     def __init__(self, app):
+#         app.start()
+#         session = app.session
+#         # Connect to the services
+#         try:
+#             self.aas = session.service("ALAudioRecorder")
+#             self.tts = session.service("ALTextToSpeech")
+#             print("Connected to ALAudioRecorder and ALTextToSpeech service")
+#             self.tts.setVoice("naomnc")
+#         except Exception as e:
+#             print("Could not connect to service")
+#             # traceback.print_exc()
+#             exit(1)
+#     def startRecord(self, filename, filetype, samplerate, channels):
+#         self.aas.startMicrophonesRecording(filename, filetype, samplerate, channels)
+#     def stopRecord(self):
+#         self.aas.stopMicrophonesRecording()
+#     def speechTalk(self, reply):
+#         self.tts.setLanguage("English")
+#         self.tts.say(reply)
+#     def stopTalk(self):
+#         self.tts.stopAll()
 
 # This connects to the NAO
 class connection_details():
@@ -60,16 +62,14 @@ class connection_details():
         args = parser.parse_args()
         ip, port, model, norobot, nomic = args.ip, args.port, args.model, args.norobot, args.nomic
 
-    def runFromMainStart(ipadd, portnum, modelname):
+    def runFromMainStart(ipadd, portnum, modelname, qistarted):
         global ip, port, model, norobot, nomic
         ip, port, model, norobot, nomic = ipadd, portnum, modelname, False, False
         try:
             # Initialize qi framework.
             global ipaddr, app, start_record
-            connection_url = "tcp://" + ip + ":" + str(port)
             ipaddr = ip
-            app = Application(["NAOAI", "--qi-url=" + connection_url])
-            start_record = audiorecorder(app)
+            start_record = qiservice(ip, port, qistarted)
             print(start_record)
 
         except RuntimeError:
@@ -93,7 +93,7 @@ if __name__ == "__main__" and norobot == False:
         connection_url = "tcp://" + ip + ":" + str(port)
         ipaddr = ip
         app = Application(["NAOAI", "--qi-url=" + connection_url])
-        start_record = audiorecorder(app)
+        start_record = qiservice(app)
     except RuntimeError:
         print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                "Please check your script arguments. Run with -h option for help.")
@@ -187,9 +187,11 @@ class transcriber():
             start_record.stopRecord()
             self.audfile = path.dirname(path.realpath(__file__))+"/request.wav"
             # SCPs the file over to the host
-            sshcom = f"nao@{ipaddr}:/home/nao/recordings/microphones/request.wav {self.audfile}"    
-            system("sshpass -p 'nao' scp -o StrictHostKeyChecking=no "+sshcom) 
-
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(ipaddr,22,username='nao',password='nao,')
+            ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', self.audfile)
+            
     def transcribing(self):
         # Transcribes using whisper
         if nomic == False:

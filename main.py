@@ -1,6 +1,6 @@
 import argparse
 from sys import exit
-import buttonpresses
+from walkingnao import buttonpresses
 from walkingnao import walk
 from naoai import stoptts
 import threading
@@ -22,11 +22,13 @@ args = parser.parse_args()
 # Sets started variable for the button detector
 started = threading.Event()
 started.clear()
+qistart = threading.Event()
+qistart.clear()
 
 # Defines processes
-buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model, started))
-naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, args.model, started))
-walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port))
+buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model, started, qistart))
+naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, args.model, started, qistart))
+walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart))
 
 # Starts Processes
 try:
