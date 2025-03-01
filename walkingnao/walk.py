@@ -92,7 +92,6 @@ def controllerWalk(isStarted):
         if x != 0 or y != 0 or z != 0:
             walking.walkto(x, y, z)
         elif x == 0 and y == 0 and z == 0:
-            print("No movement")
             walking.stopMove()
         
         # Pygame listener

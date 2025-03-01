@@ -19,7 +19,7 @@ class joybutton():
             if joytest.controller.buttonStat(0) == 1:
                 pass
             # Circle
-            elif joytest.controller.buttonStat(1) == 1:
+            elif joytest.controller.buttonStat(1) == 1 and started.is_set() == False:
                 qiapi.qiservice(ip, port, qistarted).recover()
             # Square
             elif joytest.controller.buttonStat(2) == 1:
@@ -40,7 +40,7 @@ class joybutton():
         while done == False:
             if joytest.controller.buttonStat(1) == 1 and started.is_set() == True:
                 print("Stopping Mics")
-                naoai.connection_details.runFromMainStop(ip, port, model, qistarted)
+                naoai.connection_details.runFromMainStop(ip, port, model)
                 started.clear()
             else:
                 pass

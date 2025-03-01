@@ -1,4 +1,3 @@
-# import speech_recognition as sr
 print("Initializing modules...")
 from requests import post
 from re import sub
@@ -10,6 +9,7 @@ from time import sleep
 import argparse
 from whisper import load_model
 from whisper import transcribe
+from multiprocessing import Process
 # import traceback
 from os import path
 from os import system
@@ -17,31 +17,6 @@ import paramiko
 from configparser import ConfigParser
 from ollama import chat
 from ollama import ChatResponse
-
-# Defines methods that interface with the NAO
-# class audiorecorder():
-#     def __init__(self, app):
-#         app.start()
-#         session = app.session
-#         # Connect to the services
-#         try:
-#             self.aas = session.service("ALAudioRecorder")
-#             self.tts = session.service("ALTextToSpeech")
-#             print("Connected to ALAudioRecorder and ALTextToSpeech service")
-#             self.tts.setVoice("naomnc")
-#         except Exception as e:
-#             print("Could not connect to service")
-#             # traceback.print_exc()
-#             exit(1)
-#     def startRecord(self, filename, filetype, samplerate, channels):
-#         self.aas.startMicrophonesRecording(filename, filetype, samplerate, channels)
-#     def stopRecord(self):
-#         self.aas.stopMicrophonesRecording()
-#     def speechTalk(self, reply):
-#         self.tts.setLanguage("English")
-#         self.tts.say(reply)
-#     def stopTalk(self):
-#         self.tts.stopAll()
 
 # This connects to the NAO
 class connection_details():
@@ -70,7 +45,6 @@ class connection_details():
             global ipaddr, app, start_record
             ipaddr = ip
             start_record = qiservice(ip, port, qistarted)
-            print(start_record)
 
         except RuntimeError:
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
@@ -82,7 +56,9 @@ class connection_details():
         global ip, port, model, norobot, nomic
         ip, port, model, norobot, nomic = ipadd, portnum, modelname, False, False
         transcriber().queryingOff()
-        transcriber().transcribing()
+        whisperprocess = Process(target=transcriber().transcribing(), args=(model))
+        whisperprocess.start()
+        whisperprocess.join()
 
 if __name__ == "__main__":
     connection_details.runFromCurrent()
@@ -172,36 +148,40 @@ class airesponse():
 class transcriber():
     def queryingOn(self):
         # Checks to see if mics are on
+        global query
         if nomic == True:
-            self.query = input("Enter the query: ")
+            query = input("Enter the query: ")
         else:
-            self.query = ""
+            query = ""
 
-        if self.query == "": 
+        if query == "": 
             channels = [0, 0, 1, 0]
             start_record.stopRecord()
             start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
             print("SPEAK NOW")            
     def queryingOff(self):
-        if self.query == "":
+        if query == "":
             start_record.stopRecord()
-            self.audfile = path.dirname(path.realpath(__file__))+"/request.wav"
+            global audfile
+            audfile = path.dirname(path.realpath(__file__))+"/request.wav"
+            print(audfile)
             # SCPs the file over to the host
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(ipaddr,22,username='nao',password='nao,')
-            ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', self.audfile)
+            ssh.connect(ipaddr,22,username='nao',password='nao')
+            ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', audfile)
             
-    def transcribing(self):
+    def transcribing(self, model):
         # Transcribes using whisper
         if nomic == False:
             print("Transcribing...")
-            model = load_model("tiny")
-            query = model.transcribe(self.audfile)
+            whispmodel = load_model("tiny")
+            print("Model loaded")
+            query = whispmodel.transcribe(audfile)
             cleanedQuery = (query["text"])
             print("\nWhisper thinks you said: "+cleanedQuery)
         else:
-            cleanedQuery = self.query
+            cleanedQuery = query
 
         # Make NAO say the response by calling the method corresponding to each model
         if model == "deepseek" or model == "gemma":
