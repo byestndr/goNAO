@@ -22,15 +22,14 @@ class joybutton():
             elif joytest.controller.buttonStat(1) == 1 and started.is_set() == False:
                 qiapi.qiservice(ip, port, qistarted).recover()
             # Square
-            elif joytest.controller.buttonStat(2) == 1:
+            elif joytest.controller.buttonStat(3) == 1:
                 pass
             # Triangle
-            elif joytest.controller.buttonStat(3) == 1 and started.is_set() == False:
+            elif joytest.controller.buttonStat(2) == 1 and started.is_set() == False:
                 # The AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
                 naoai.connection_details.runFromMainStart(ip, port, model, qistarted)
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
@@ -40,7 +39,7 @@ class joybutton():
         while done == False:
             if joytest.controller.buttonStat(1) == 1 and started.is_set() == True:
                 print("Stopping Mics")
-                naoai.connection_details.runFromMainStop(ip, port, model)
+                naoai.connection_details.runFromMainStop(ip, port, model, qistarted)
                 started.clear()
             else:
                 pass

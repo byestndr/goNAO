@@ -10,6 +10,7 @@ import argparse
 from whisper import load_model
 from whisper import transcribe
 from multiprocessing import Process
+from multiprocessing import Queue
 # import traceback
 from os import path
 from os import system
@@ -52,13 +53,16 @@ class connection_details():
             exit(1)
         transcriber().queryingOn()
 
-    def runFromMainStop(ipadd, portnum, modelname):
+    def runFromMainStop(ipadd, portnum, modelname, qistarted):
         global ip, port, model, norobot, nomic
         ip, port, model, norobot, nomic = ipadd, portnum, modelname, False, False
+        say = Queue()
         transcriber().queryingOff()
-        whisperprocess = Process(target=transcriber().transcribing(), args=(model))
+        whisperprocess = Process(target=transcriber().transcribing, args=(ipadd, portnum, modelname, qistarted, say))
         whisperprocess.start()
         whisperprocess.join()
+        talk = str(say.get())
+        transcriber.tts(talk, qistarted)
 
 if __name__ == "__main__":
     connection_details.runFromCurrent()
@@ -122,7 +126,7 @@ class airesponse():
         content = (x["candidates"][0]["content"]["parts"][0]["text"]) 
         print(sub('[*]', " ", content))
         return content
-    def ollama(self, prompt):
+    def ollama(self, prompt, model):
         if model == "deepseek":
             model = 'deepseek-r1:1.5b'
         else:
@@ -171,7 +175,7 @@ class transcriber():
             ssh.connect(ipaddr,22,username='nao',password='nao')
             ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', audfile)
             
-    def transcribing(self, model):
+    def transcribing(self, ip, port, model, qistarted, say):
         # Transcribes using whisper
         if nomic == False:
             print("Transcribing...")
@@ -185,12 +189,17 @@ class transcriber():
 
         # Make NAO say the response by calling the method corresponding to each model
         if model == "deepseek" or model == "gemma":
-            reply = airesponse().ollama(cleanedQuery)
+            reply = airesponse().ollama(cleanedQuery, model)
         else:
             reply = airesponse().gemini(cleanedQuery)
 
         # Creates talking process
+        say.put(reply)
+        
+    def tts(reply, qistarted):
+        print("Starting talk")
         start_record.speechTalk(reply)
+        
 
 # Checks if the no robot flag is on and runs depending on if it is
 if __name__ == "__main__" and norobot == False:

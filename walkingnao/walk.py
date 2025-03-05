@@ -66,7 +66,7 @@ def controllerWalk(isStarted):
         y = joytest.controller.axispos(0)
         x = joytest.controller.axispos(1)
         # Z is rotation
-        z = joytest.controller.axispos(2)
+        z = joytest.controller.axispos(3)
 
         # Checks if Z axis is being used
         if z > 0 or z < 0:

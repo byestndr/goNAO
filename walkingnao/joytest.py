@@ -25,6 +25,4 @@ class controller:
     def buttonNum():
         return range(joys.get_numbuttons())
 
-done = False
-
-
+# done = False

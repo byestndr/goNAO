@@ -3,6 +3,7 @@ import threading
 
 class qiservice():
     def __init__(self, ip, port, started):
+        print("Hello")
         if started.is_set() == False:
             global app, session
             connection_url = "tcp://" + ip + ":" + str(port)
@@ -11,6 +12,8 @@ class qiservice():
             app.start()
             session = app.session
             started.set()
+        else:
+            print("Service already started")
         # Connect to the services
         try:
             self.aas = session.service("ALAudioRecorder")
@@ -29,6 +32,7 @@ class qiservice():
     def stopRecord(self):
         self.aas.stopMicrophonesRecording()
     def speechTalk(self, reply):
+        print("Replying")
         self.tts.setLanguage("English")
         self.tts.say(reply)
     def stopTalk(self):
