@@ -24,6 +24,8 @@ class connection_details():
             global walking
             app = Application(["NAOAI", "--qi-url=" + connection_url])
             walking = qiapi.qiservice(app)
+            walking.hasFallen()
+
         except RuntimeError:
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                 "Please check your script arguments. Run with -h option for help.")
@@ -35,7 +37,6 @@ class connection_details():
         
         try:
             # Initialize qi framework.
-            print("Hello")
             global walking
             walking = qiapi.qiservice(ip, port, qistarted)
         except RuntimeError:
@@ -48,7 +49,7 @@ class connection_details():
         
 if __name__ == "__main__":
     connection_details.runFromCurrent()
-
+        
 # Controller walking function
 def controllerWalk(isStarted):
     done = False
@@ -57,9 +58,11 @@ def controllerWalk(isStarted):
         # If the robot falls, it should automatically recover
         # ROBOT DOES NOT RECOVER PLEASE FIX
         # MAKE CONTROLLER BUTTON
-        if walking.hasFallen() == True:
-            print("FALLEN")
-            walking.recover()
+        # if walking.ifFallen() == True:
+        #     print("FALLEN")
+        #     walking.recover()
+        # else:
+        #     pass
 
         # Gets position for x and y axes on the left stick
         # Controller Axes
@@ -82,7 +85,7 @@ def controllerWalk(isStarted):
             
         
         # Prints values out for debugging
-        print(x * -0.8, y * -0.8, z * -0.8)
+        print(x * -0.7, y * -0.7, z * -0.7)
 
         # Checks if app has been initialized yet and initalizes
         walking.initMove(isStarted)
