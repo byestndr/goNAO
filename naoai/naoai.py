@@ -11,6 +11,7 @@ from whisper import load_model
 from whisper import transcribe
 from multiprocessing import Process
 from multiprocessing import Queue
+import threading
 # import traceback
 from os import path
 from os import system
@@ -53,12 +54,14 @@ class connection_details():
             exit(1)
         transcriber().queryingOn()
 
-    def runFromMainStop(ipadd, portnum, modelname, qistarted):
+    def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey):
         global ip, port, model, norobot, nomic
         ip, port, model, norobot, nomic = ipadd, portnum, modelname, False, False
+        if apikey == "":
+            apikey = False
         say = Queue()
         transcriber().queryingOff()
-        whisperprocess = Process(target=transcriber().transcribing, args=(ipadd, portnum, modelname, qistarted, say))
+        whisperprocess = Process(target=transcriber().transcribing, args=(modelname, say, apikey))
         whisperprocess.start()
         whisperprocess.join()
         talk = str(say.get())
@@ -81,21 +84,7 @@ if __name__ == "__main__" and norobot == False:
 
 # AI response class
 class airesponse():
-    def gemini(self, prompt):
-        # Sets config variables
-        scriptpath = (path.dirname(path.realpath(__file__)))
-        configpath = scriptpath + "/config.ini"
-        config = ConfigParser()
-        # Get Gemini API key if it doesn't exist
-        if path.isfile(configpath) == True:
-            config.read(configpath)
-            api_key = config.get('Main', 'api_key')
-        else:
-            keysave = input("Set a Gemini API key: ")
-            config['Main'] = {'api_key': keysave}
-            with open(configpath, 'w') as configfile:
-                config.write(configfile)
-            api_key = config.get('Main', 'api_key')
+    def gemini(self, prompt, api_key):
         # Sends the data to Gemini
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={api_key}"
         data = {
@@ -175,7 +164,7 @@ class transcriber():
             ssh.connect(ipaddr,22,username='nao',password='nao')
             ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', audfile)
             
-    def transcribing(self, ip, port, model, qistarted, say):
+    def transcribing(self, model, say, apikey):
         # Transcribes using whisper
         if nomic == False:
             print("Transcribing...")
@@ -191,7 +180,7 @@ class transcriber():
         if model == "deepseek" or model == "gemma":
             reply = airesponse().ollama(cleanedQuery, model)
         else:
-            reply = airesponse().gemini(cleanedQuery)
+            reply = airesponse().gemini(cleanedQuery, apikey)
 
         # Creates talking process
         say.put(reply)
