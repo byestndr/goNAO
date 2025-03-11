@@ -56,6 +56,8 @@ class qiservice():
         self.loco.stopMove()
     def wave(self):
         self.anim.run("animation-a6d9a5/behavior_1")
+    def listBehaviors(self):
+        print(self.behave.getInstalledBehaviors())
 
 
     # Subscribes to robot fallen event and sees if robot falls

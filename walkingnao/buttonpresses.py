@@ -37,7 +37,6 @@ class joybutton():
 
     def OnAiOff(self, ip, port, model, started, qistarted, apikey):
         done = False
-
         while done == False:
             if joytest.controller.buttonStat(1) == 1 and started.is_set() == True:
                 light = qiapi.qiservice(ip, port, qistarted)
