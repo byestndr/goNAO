@@ -8,31 +8,8 @@ import traceback
 
 # Argument Parser
 class connection_details():
-    def runFromCurrent():
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--ip", type=str, default="127.0.0.1",
-                            help="IP address for the NAO robot. Cannot be a simulated robot as they are not supported")
-        parser.add_argument("--port", type=int, default=9559,
-                            help="NAO port")
-        global ip, port
-        args = parser.parse_args()
-        ip, port = args.ip, args.port
-        
-        try:
-            # Initialize qi framework.
-            connection_url = "tcp://" + ip + ":" + str(port)
-            global walking
-            app = Application(["NAOAI", "--qi-url=" + connection_url])
-            walking = qiapi.qiservice(app)
-            walking.hasFallen()
-
-        except RuntimeError:
-            print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
-                "Please check your script arguments. Run with -h option for help.")
-            exit(1)
-
     def runFromMain(ipadd, portnum, qistarted):
-        global ip, port, model, norobot, nomic
+        global ip, port
         ip, port = ipadd, portnum
         
         try:
@@ -45,10 +22,6 @@ class connection_details():
             exit(1)
         print("Starting walk")
         controllerWalk(0)
-        
-        
-if __name__ == "__main__":
-    connection_details.runFromCurrent()
         
 # Controller walking function
 def controllerWalk(isStarted):
@@ -83,7 +56,6 @@ def controllerWalk(isStarted):
         elif abs(y) == abs(x):
             x, y = 0, 0 
             
-        
         # Prints values out for debugging
         print(x * -0.7, y * -0.7, z * -0.7)
 
@@ -104,6 +76,3 @@ def controllerWalk(isStarted):
                 done = True
 
         sleep(0.1)
-
-if __name__ == "__main__":
-    controllerWalk(0)

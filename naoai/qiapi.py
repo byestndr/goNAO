@@ -1,16 +1,21 @@
 from qi import Application
 import threading
+from sys import exit
 
 class qiservice():
     def __init__(self, ip, port, started):
         if started.is_set() == False:
-            global app, session
-            connection_url = "tcp://" + ip + ":" + str(port)
-            app = Application(["goNAO", "--qi-url=" + connection_url])
+            try:
+                global app, session
+                connection_url = "tcp://" + ip + ":" + str(port)
+                app = Application(["goNAO", "--qi-url=" + connection_url])
 
-            app.start()
-            session = app.session
-            started.set()
+                app.start()
+                session = app.session
+                started.set()
+            except RuntimeError:
+                print("Could not connect to NAO, please check the ip and port.")
+                exit(1)
         else:
             print("Service already started")
         # Connect to the services
