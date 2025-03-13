@@ -71,6 +71,7 @@ class qiservice():
     # def hasFallen(self):
     #     fall = self.mem.subscriber("robotHasFallen")
     #     fall.signal.connect(self.ifFallen)
+    
     # Attempts to recover robot
     def recover(self):
         self.pos.goToPosture("LyingBack", 0.6)

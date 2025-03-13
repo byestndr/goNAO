@@ -35,8 +35,6 @@ class connection_details():
     def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey):
         global ip, port, model
         ip, port, model = ipadd, portnum, modelname
-        if apikey == "":
-            apikey = False
         say = Queue()
         transcriber().queryingOff()
         whisperprocess = Process(target=transcriber().transcribing, args=(modelname, say, apikey))

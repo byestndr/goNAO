@@ -25,16 +25,19 @@ if args.model == "gemini":
     scriptpath = (path.dirname(path.realpath(__file__)))
     configpath = scriptpath + "/config.ini"
     config = ConfigParser()
-    # Get Gemini API key if it doesn't exist
-    if path.isfile(configpath) == True:
-        config.read(configpath)
-        api_key = config.get('Main', 'api_key')
-    elif path.isfile(configpath) == False:
-        keysave = input("Set a Gemini API key: ")
-        config['Main'] = {'api_key': keysave}
-        with open(configpath, 'w') as configfile:
-            config.write(configfile)
-        api_key = config.get('Main', 'api_key')
+
+# Get Gemini API key if it doesn't exist    
+if args.model == "gemini" and path.isfile(configpath) == True:
+    config.read(configpath)
+    api_key = config.get('Main', 'api_key')
+elif args.model =="gemini" and path.isfile(configpath) == False:
+    keysave = input("Set a Gemini API key: ")
+    config['Main'] = {'api_key': keysave}
+    with open(configpath, 'w') as configfile:
+        config.write(configfile)
+    api_key = config.get('Main', 'api_key')
+else:
+    api_key = "none"
 
 # Sets started variable for the button detector
 started = threading.Event()
@@ -53,4 +56,5 @@ try:
     buttonDetector.start()
     naoTranscribeOff.start()
 except KeyboardInterrupt:
+    print("Stopping")
     stoptts.connection_details.runFromMain(args.ip, args.port)

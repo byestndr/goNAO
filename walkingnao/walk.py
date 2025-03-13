@@ -28,15 +28,6 @@ def controllerWalk(isStarted):
     done = False
     while done == False:
 
-        # If the robot falls, it should automatically recover
-        # ROBOT DOES NOT RECOVER PLEASE FIX
-        # MAKE CONTROLLER BUTTON
-        # if walking.ifFallen() == True:
-        #     print("FALLEN")
-        #     walking.recover()
-        # else:
-        #     pass
-
         # Gets position for x and y axes on the left stick
         # Controller Axes
         y = joytest.controller.axispos(0)

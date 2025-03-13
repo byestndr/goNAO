@@ -3,13 +3,8 @@ from . import joytest
 from . import walk
 import pygame
 from naoai import qiapi
-
-# from multiprocessing import Value
 import threading
 from time import sleep
-
-# started = Value('i', 0)         
-
 
 class joybutton():
     def controllerButtons(self, ip, port, model, started, qistarted):
