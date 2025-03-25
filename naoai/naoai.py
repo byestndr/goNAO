@@ -1,19 +1,16 @@
 print("Initializing modules...")
 from requests import post
-from re import sub
-from re import DOTALL
+from re import sub, DOTALL
 from .qiapi import qiservice
 from sys import exit
-from whisper import load_model
-from whisper import transcribe
-from multiprocessing import Process
-from multiprocessing import Queue
+# from whisper import transcribe
+from faster_whisper import WhisperModel
+from multiprocessing import Process, Queue
 import threading
 # import traceback
-from os import path
+from os import path, remove
 import paramiko
-from ollama import chat
-from ollama import ChatResponse
+from ollama import chat, ChatResponse
 
 # This connects to the NAO
 class connection_details():
@@ -52,7 +49,7 @@ class airesponse():
         data = {
             "system_instruction": {
                 "parts": 
-                    {"text": "You are a robot named 'TJ' responding to a human in a conversation. Answer in 1-2 sentences. You'll also need to be opinionated."}
+                    {"text": "You are a robot assistant that is extremely sarcastic and witty towards any questions. Make sure to come up with quick remarks"}
             },
             "contents": [{
             "parts":[{"text": prompt}]
@@ -120,13 +117,30 @@ class transcriber():
         ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', audfile)
             
     def transcribing(self, model, say, apikey):
+        
         # Transcribes using whisper
-        print("Transcribing...")
-        whispmodel = load_model("tiny")
-        print("Model loaded")
-        query = whispmodel.transcribe(audfile)
-        cleanedQuery = (query["text"])
-        print("\nWhisper thinks you said: "+cleanedQuery)
+        # print("Transcribing...")
+        # whispmodel = load_model("tiny")
+        # print("Model loaded")
+        # query = whispmodel.transcribe(audfile)
+        # cleanedQuery = (query["text"])
+        # print("\nWhisper thinks you said: "+cleanedQuery)
+        
+        # Sets model size
+        model_size = "tiny.en"
+
+        # Transcribes using faster whisper
+        whispmodel = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
+        segments, info = whispmodel.transcribe(str(audfile))
+
+        segments = list(segments)
+        for segment in segments:
+            print(segment.text)
+            cleanedQuery = segment.text
+        
+        # Deletes audio request
+        if path.isfile(audfile) == True:
+            remove(audfile)
 
         # Make NAO say the response by calling the method corresponding to each model
         if model == "deepseek" or model == "gemma":
@@ -134,7 +148,7 @@ class transcriber():
         else:
             reply = airesponse().gemini(cleanedQuery, apikey)
 
-        # Creates talking process
+        # Puts the reply into the speech queue
         say.put(reply)
         
     def tts(reply, qistarted):
