@@ -63,7 +63,11 @@ class qiservice():
         self.anim.run("animation-a6d9a5/behavior_1")
     def listBehaviors(self):
         print(self.behave.getInstalledBehaviors())
-
+    def moveHead(self, joystick):
+        self.loco.setStiffnesses("Head", 1.0)
+        self.loco.setAngles("Head", 0.3, joystick)
+        print(self.loco.getTaskList())
+        
 
     # Subscribes to robot fallen event and sees if robot falls
     # def ifFallen(fallen):

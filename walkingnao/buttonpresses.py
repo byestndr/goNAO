@@ -1,5 +1,5 @@
 from naoai import naoai
-from . import joytest
+import joytest
 from . import walk
 import pygame
 from naoai import qiapi
@@ -9,6 +9,8 @@ from time import sleep
 class joybutton():
     def controllerButtons(self, ip, port, model, started, qistarted):
         done = False
+        modes = ("walking", "headControl")
+        currentMode = 0
         while done == False:
             # Cross
             if joytest.controller.buttonStat(0) == 1:
@@ -22,13 +24,43 @@ class joybutton():
                 qiapi.qiservice(ip, port, qistarted).wave()
             # Triangle
             elif joytest.controller.buttonStat(2) == 1 and started.is_set() == False:
-                # The AI button
+                # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
                 naoai.connection_details.runFromMainStart(ip, port, model, qistarted)
+            # DPAD UP
+            if joytest.controller.hatpos() == (0, 1):
+                for x in modes:
+                    try:
+                        currentMode = modes.index(modes[currentMode+1])
+                        print(modes[currentMode])
+                        break
+                    except IndexError:
+                        pass
+                        
+            # DPAD DOWN
+            elif joytest.controller.hatpos() == (0, -1) and currentMode != 0:
+                for x in modes:
+                    try:
+                        currentMode = modes.index(modes[currentMode-1])
+                        #print(modes[currentMode])
+                        print(modes[currentMode])
+                        break
+                    except IndexError:
+                        print(currentMode)
+                        pass
+                    
+            # DPAD LEFT
+            # elif joytest.controller.buttonStat(13) == 1:
+            #     pass
+            #  DPAD RIGHT
+            # elif joytest.controller.buttonStat(14) == 1:
+            #     pass
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
+while True:
+    joybutton().controllerButtons(False, False, False, False, False)
 
     def OnAiOff(self, ip, port, model, started, qistarted, apikey):
         done = False

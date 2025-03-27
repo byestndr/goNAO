@@ -8,9 +8,9 @@ import traceback
 
 # Argument Parser
 class connection_details():
-    def runFromMain(ipadd, portnum, qistarted):
-        global ip, port
-        ip, port = ipadd, portnum
+    def runFromMain(ipadd, portnum, qistarted, mode):
+        global ip, port, walkMode
+        ip, port, mode = ipadd, portnum, walkMode
         
         try:
             # Initialize qi framework.
@@ -26,7 +26,7 @@ class connection_details():
 # Controller walking function
 def controllerWalk(isStarted):
     done = False
-    while done == False:
+    while walkMode == True and done == False:
 
         # Gets position for x and y axes on the left stick
         # Controller Axes
