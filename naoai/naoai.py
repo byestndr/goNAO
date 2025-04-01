@@ -152,5 +152,10 @@ class transcriber():
         say.put(reply)
         
     def tts(reply, qistarted):
-        print("Starting talk")
-        start_record.speechTalk(reply)
+        try:
+            print("Starting talk")
+            start_record.speechTalk(reply)
+        except RuntimeError as e:
+            if e == "Future canceled.":
+                print("Stopped talking")
+
