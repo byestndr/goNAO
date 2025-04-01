@@ -1,13 +1,14 @@
 from naoai import naoai
-import joytest
+from . import joytest
 from . import walk
 import pygame
 from naoai import qiapi
+from naoai import stoptts
 import threading
 from time import sleep
 
 class joybutton():
-    def controllerButtons(self, ip, port, model, started, qistarted):
+    def controllerButtons(self, ip, port, model, started, qistarted, walkmode):
         done = False
         modes = ("walking", "headControl")
         currentMode = 0
@@ -29,11 +30,12 @@ class joybutton():
                 print("Starting AI, press circle to stop.\n")
                 naoai.connection_details.runFromMainStart(ip, port, model, qistarted)
             # DPAD UP
-            if joytest.controller.hatpos() == (0, 1):
+            elif joytest.controller.hatpos() == (0, 1):
                 for x in modes:
                     try:
                         currentMode = modes.index(modes[currentMode+1])
                         print(modes[currentMode])
+                        walkmode.clear()
                         break
                     except IndexError:
                         pass
@@ -43,12 +45,15 @@ class joybutton():
                 for x in modes:
                     try:
                         currentMode = modes.index(modes[currentMode-1])
-                        #print(modes[currentMode])
                         print(modes[currentMode])
+                        walkmode.set()
+                        print(walkmode.is_set())
                         break
                     except IndexError:
-                        print(currentMode)
                         pass
+            elif joytest.controller.buttonStat(9) == 1:
+                stoptts.connection_details.runFromMain(ip, port, qistarted)
+                started.clear()
                     
             # DPAD LEFT
             # elif joytest.controller.buttonStat(13) == 1:
@@ -59,8 +64,6 @@ class joybutton():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
-while True:
-    joybutton().controllerButtons(False, False, False, False, False)
 
     def OnAiOff(self, ip, port, model, started, qistarted, apikey):
         done = False

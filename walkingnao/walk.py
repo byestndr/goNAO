@@ -2,7 +2,7 @@ from naoai import qiapi
 from qi import Application
 from walkingnao import joytest
 import pygame
-import argparse
+import threading
 from time import sleep
 import traceback
 
@@ -10,7 +10,7 @@ import traceback
 class connection_details():
     def runFromMain(ipadd, portnum, qistarted, mode):
         global ip, port, walkMode
-        ip, port, mode = ipadd, portnum, walkMode
+        ip, port, walkMode = ipadd, portnum, mode
         
         try:
             # Initialize qi framework.
@@ -26,8 +26,7 @@ class connection_details():
 # Controller walking function
 def controllerWalk(isStarted):
     done = False
-    while walkMode == True and done == False:
-
+    while done == False:
         # Gets position for x and y axes on the left stick
         # Controller Axes
         y = joytest.controller.axispos(0)
@@ -46,20 +45,26 @@ def controllerWalk(isStarted):
             x = 0
         elif abs(y) == abs(x):
             x, y = 0, 0 
-            
-        # Prints values out for debugging
-        print(x * -0.7, y * -0.7, z * -0.7)
-
-        # Checks if app has been initialized yet and initalizes
-        walking.initMove(isStarted)
-        isStarted = 1
-
-        # Walks robot
-        if x != 0 or y != 0 or z != 0:
-            walking.walkto(x, y, z)
-        elif x == 0 and y == 0 and z == 0:
-            walking.stopMove()
         
+        if walkMode.is_set() == True:
+            # Prints values out for debugging
+            print(x * -0.7, y * -0.7, z * -0.7)
+
+            # Checks if app has been initialized yet and initalizes
+            walking.initMove(isStarted)
+            isStarted = 1
+
+            # Walks robot
+            if x != 0 or y != 0 or z != 0:
+                walking.walkto(x, y, z)
+            elif x == 0 and y == 0 and z == 0:
+                walking.stopMove()
+        elif walkMode.is_set() == False:
+            x, y = x * 0.2, y * 0.2
+            print(x, y)
+
+            walking.moveHead(y, x)
+
         # Pygame listener
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

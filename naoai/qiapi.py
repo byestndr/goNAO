@@ -63,10 +63,25 @@ class qiservice():
         self.anim.run("animation-a6d9a5/behavior_1")
     def listBehaviors(self):
         print(self.behave.getInstalledBehaviors())
-    def moveHead(self, joystick):
-        self.loco.setStiffnesses("Head", 1.0)
-        self.loco.setAngles("Head", 0.3, joystick)
-        print(self.loco.getTaskList())
+    def moveHead(self, x, y):
+        if y == 0 and x > 0:
+            joystick = x
+
+            self.loco.setStiffnesses("Head", 1.0)
+            self.loco.changeAngles("HeadYaw", -0.3, joystick)
+            #print(self.loco.getTaskList())
+        elif y == 0 and x < 0:
+            joystick = abs(x)
+            self.loco.setStiffnesses("Head", 1.0)
+            self.loco.changeAngles("HeadYaw", 0.3, joystick)
+        elif y > 0 and x == 0:
+            joystick = y
+            self.loco.setStiffnesses("Head", 1.0)
+            self.loco.changeAngles("HeadPitch", 0.3, joystick)
+        elif y < 0 and x == 0:
+            joystick = abs(y)
+            self.loco.setStiffnesses("Head", 1.0)
+            self.loco.changeAngles("HeadPitch", -0.3, joystick)
         
 
     # Subscribes to robot fallen event and sees if robot falls
