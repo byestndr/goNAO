@@ -3,12 +3,15 @@ from . import joytest
 from . import walk
 import pygame
 from naoai import qiapi
+from naoai import stoptts
 import threading
 from time import sleep
 
 class joybutton():
-    def controllerButtons(self, ip, port, model, started, qistarted):
+    def controllerButtons(self, ip, port, model, started, qistarted, walkmode):
         done = False
+        modes = ("walking", "headControl")
+        currentMode = 0
         while done == False:
             # Cross
             if joytest.controller.buttonStat(0) == 1:
@@ -22,10 +25,42 @@ class joybutton():
                 qiapi.qiservice(ip, port, qistarted).wave()
             # Triangle
             elif joytest.controller.buttonStat(2) == 1 and started.is_set() == False:
-                # The AI button
+                # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
                 naoai.connection_details.runFromMainStart(ip, port, model, qistarted)
+            # DPAD UP
+            elif joytest.controller.hatpos() == (0, 1):
+                for x in modes:
+                    try:
+                        currentMode = modes.index(modes[currentMode+1])
+                        print(modes[currentMode])
+                        walkmode.clear()
+                        break
+                    except IndexError:
+                        pass
+                        
+            # DPAD DOWN
+            elif joytest.controller.hatpos() == (0, -1) and currentMode != 0:
+                for x in modes:
+                    try:
+                        currentMode = modes.index(modes[currentMode-1])
+                        print(modes[currentMode])
+                        walkmode.set()
+                        print(walkmode.is_set())
+                        break
+                    except IndexError:
+                        pass
+            elif joytest.controller.buttonStat(9) == 1:
+                stoptts.connection_details.runFromMain(ip, port, qistarted)
+                started.clear()
+                    
+            # DPAD LEFT
+            # elif joytest.controller.buttonStat(13) == 1:
+            #     pass
+            #  DPAD RIGHT
+            # elif joytest.controller.buttonStat(14) == 1:
+            #     pass
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True

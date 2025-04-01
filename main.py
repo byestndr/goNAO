@@ -44,11 +44,13 @@ started = threading.Event()
 started.clear()
 qistart = threading.Event()
 qistart.clear()
+walkMode = threading.Event()
+walkMode.set()
 
 # Defines processes
-buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model, started, qistart))
+buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model, started, qistart, walkMode))
 naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, args.model, started, qistart, api_key))
-walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart))
+walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart, walkMode))
 
 # Starts Processes
 try:
