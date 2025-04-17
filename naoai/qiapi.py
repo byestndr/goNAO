@@ -30,6 +30,7 @@ class qiservice():
             print("Connected to the Motion and Posture services")
             self.behave = session.service("ALBehaviorManager")
             self.anim = session.service("ALAnimationPlayer")
+            self.sonar = session.service("ALSonar")
 
         except Exception as e:
             print("Could not connect to service")
@@ -82,6 +83,15 @@ class qiservice():
             joystick = abs(y)
             self.loco.setStiffnesses("Head", 1.0)
             self.loco.changeAngles("HeadPitch", -0.3, joystick)
+    def initSonar(self):
+        self.sonar.subscribe("autowalk")
+    def sonarLeft(self):
+        return self.mem.getData("SonarLeftDetected")
+    def sonarRight(self):
+        return self.mem.getData("SonarRightDetected")
+    def stopSonar(self):
+        self.sonar.unsubscribe("autowalk")
+
         
 
     # Subscribes to robot fallen event and sees if robot falls

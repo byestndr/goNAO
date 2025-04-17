@@ -5,10 +5,11 @@ import pygame
 import threading
 from time import sleep
 import traceback
+from sys import exit
 
 # Argument Parser
 class connection_details():
-    def runFromMain(ipadd, portnum, qistarted, mode):
+    def runFromMain(ipadd, portnum, qistarted, mode, automode):
         global ip, port, walkMode
         ip, port, walkMode = ipadd, portnum, mode
         
@@ -21,7 +22,12 @@ class connection_details():
                 "Please check your script arguments. Run with -h option for help.")
             exit(1)
         print("Starting walk")
-        controllerWalk(0)
+        
+        if automode == False:
+            controllerWalk(0)
+        else:
+            autowalk()
+        
         
 # Controller walking function
 def controllerWalk(isStarted):
@@ -72,3 +78,11 @@ def controllerWalk(isStarted):
                 done = True
 
         sleep(0.1)
+
+def autowalk():
+    while True:
+        walking.initSonar()
+        print(walking.sonarLeft())
+
+    
+    

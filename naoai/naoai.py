@@ -1,12 +1,11 @@
 print("Initializing modules...")
 from requests import post
-from re import sub, DOTALL
+from re import sub
 from .qiapi import qiservice
 from sys import exit
 # from whisper import transcribe
 from faster_whisper import WhisperModel
 from multiprocessing import Process, Queue
-import threading
 # import traceback
 from os import path, remove
 import paramiko
@@ -76,11 +75,7 @@ class airesponse():
         print(sub('[*]', " ", content))
         return content
     def ollama(self, prompt, model, sysprompt):
-        if model == "deepseek":
-            model = 'deepseek-r1:1.5b'
-        else:
-            model = 'naoGemma'
-        
+
         response: ChatResponse = chat(model=model, messages=[
           {
             'role': 'system',
@@ -92,15 +87,9 @@ class airesponse():
           },
         ])
         
-        if model == "deepseek":
-            response = response['message']['content']
-            nothink = sub(r"<think>.*?</think>\n?", "", response, flags=DOTALL) 
-            print(nothink)
-            return(nothink)
-        else:
-            response = response['message']['content']
-            print(sub('[*]', " ", response))
-            return(sub('[*]', " ", response))
+        response = response['message']['content']
+        print(sub('[*]', " ", response))
+        return(sub('[*]', " ", response))
 
 class transcriber():
     def queryingOn(self):
@@ -147,10 +136,10 @@ class transcriber():
             remove(audfile)
 
         # Make NAO say the response by calling the method corresponding to each model
-        if model == "deepseek" or model == "gemma":
-            reply = airesponse().ollama(cleanedQuery, model, sysprompt)
-        else:
+        if model == "gemini":
             reply = airesponse().gemini(cleanedQuery, apikey, sysprompt)
+        else:
+            reply = airesponse().ollama(cleanedQuery, model, sysprompt)
 
         # Puts the reply into the speech queue
         say.put(reply)
