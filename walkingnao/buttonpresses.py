@@ -10,6 +10,8 @@ from time import sleep
 class joybutton():
     def controllerButtons(self, ip, port, model, started, qistarted, walkmode):
         done = False
+        modes = ("walking", "headControl")
+        currentMode = 0
         while done == False:
             # Cross
             if joytest.controller.buttonStat(0) == 1:
@@ -23,7 +25,7 @@ class joybutton():
                 qiapi.qiservice(ip, port, qistarted).wave()
             # Triangle
             elif joytest.controller.buttonStat(2) == 1 and started.is_set() == False:
-                # The AI button
+                # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
                 naoai.connection_details.runFromMainStart(ip, port, model, qistarted)

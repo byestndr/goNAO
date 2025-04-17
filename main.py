@@ -72,6 +72,8 @@ started = threading.Event()
 started.clear()
 qistart = threading.Event()
 qistart.clear()
+walkMode = threading.Event()
+walkMode.set()
 
 # Defines processes
 buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, args.model, started, qistart, walkMode))
