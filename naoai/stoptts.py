@@ -16,18 +16,16 @@ class connection_details():
         args = parser.parse_args()
         ip, port = args.ip, args.port
 
-    def runFromMain(ipadd, portnum):
-        global ip, port, model, norobot, nomic
-        ip, port = ipadd, portnum
-        end()
+    def runFromMain(ipadd, portnum, qistarted):
+        end(ipadd, portnum, qistarted)
 
 if __name__ == "__main__":
     connection_details.runFromCurrent()
 
-def end():
+def end(ip, port, qistarted):
     try:
         # Initialize qi framework.
-        stoptalk = qiservice(ip, port)
+        stoptalk = qiservice(ip, port, qistarted)
     except RuntimeError:
         print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                "Please check your script arguments. Run with -h option for help.")

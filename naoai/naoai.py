@@ -29,12 +29,12 @@ class connection_details():
             exit(1)
         transcriber().queryingOn()
 
-    def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey):
+    def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey, sysprompt):
         global ip, port, model
         ip, port, model = ipadd, portnum, modelname
         say = Queue()
         transcriber().queryingOff()
-        whisperprocess = Process(target=transcriber().transcribing, args=(modelname, say, apikey))
+        whisperprocess = Process(target=transcriber().transcribing, args=(modelname, say, apikey, sysprompt))
         whisperprocess.start()
         whisperprocess.join()
         talk = str(say.get())
@@ -42,14 +42,14 @@ class connection_details():
 
 # AI response class
 class airesponse():
-    def gemini(self, prompt, api_key):
+    def gemini(self, prompt, api_key, sysprompt):
         # Sends the data to Gemini
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={api_key}"
         
         data = {
             "system_instruction": {
                 "parts": 
-                    {"text": "You are a robot assistant that is extremely sarcastic and witty towards any questions. Make sure to come up with quick remarks"}
+                    {"text": sysprompt}
             },
             "contents": [{
             "parts":[{"text": prompt}]
@@ -75,13 +75,17 @@ class airesponse():
         content = (x["candidates"][0]["content"]["parts"][0]["text"]) 
         print(sub('[*]', " ", content))
         return content
-    def ollama(self, prompt, model):
+    def ollama(self, prompt, model, sysprompt):
         if model == "deepseek":
             model = 'deepseek-r1:1.5b'
         else:
             model = 'naoGemma'
         
         response: ChatResponse = chat(model=model, messages=[
+          {
+            'role': 'system',
+            'content': sysprompt,  
+          },
           {
             'role': 'user',
             'content': prompt,
@@ -116,7 +120,7 @@ class transcriber():
         ssh.connect(ipaddr,22,username='nao',password='nao')
         ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', audfile)
             
-    def transcribing(self, model, say, apikey):
+    def transcribing(self, model, say, apikey, sysprompt):
         
         # Transcribes using whisper
         # print("Transcribing...")
@@ -144,13 +148,18 @@ class transcriber():
 
         # Make NAO say the response by calling the method corresponding to each model
         if model == "deepseek" or model == "gemma":
-            reply = airesponse().ollama(cleanedQuery, model)
+            reply = airesponse().ollama(cleanedQuery, model, sysprompt)
         else:
-            reply = airesponse().gemini(cleanedQuery, apikey)
+            reply = airesponse().gemini(cleanedQuery, apikey, sysprompt)
 
         # Puts the reply into the speech queue
         say.put(reply)
         
     def tts(reply, qistarted):
-        print("Starting talk")
-        start_record.speechTalk(reply)
+        try:
+            print("Starting talk")
+            start_record.speechTalk(reply)
+        except RuntimeError as e:
+            if e == "Future canceled.":
+                print("Stopped talking")
+
