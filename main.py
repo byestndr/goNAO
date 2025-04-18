@@ -64,6 +64,7 @@ elif args.gemini != True and args.model == "":
 try:
     if args.gemini == True and path.isfile(configpath) == True:
         api_key = config.get('Main', 'api_key')
+        model = "gemini"
     elif args.gemini == True and path.isfile(configpath) == False:
         keysave = input("Set a Gemini API key: ")
         config.set('Main', 'api_key', keysave)
