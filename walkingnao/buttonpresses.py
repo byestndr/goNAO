@@ -1,9 +1,9 @@
-from naoai import naoai
+# from naoai import naoai
 from . import joytest
 from . import walk
 import pygame
 from naoai import qiapi
-from naoai import stoptts
+# from naoai import stoptts
 import threading
 from time import sleep
 
@@ -65,19 +65,19 @@ class joybutton():
                 if event.type == pygame.QUIT:
                     done = True
 
-    def OnAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt):
-        done = False
-        while done == False:
-            if joytest.controller.buttonStat(1) == 1 and started.is_set() == True:
-                light = qiapi.qiservice(ip, port, qistarted)
-                print("Stopping Mics")
-                threading.Thread(target=light.aiThinking, args=(started, )).start()
-                naoai.connection_details.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt)
-                started.clear()
-            else:
-                pass
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    done = True
-
+#    def OnAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt):
+#        done = False
+#        while done == False:
+#            if joytest.controller.buttonStat(1) == 1 and started.is_set() == True:
+#                light = qiapi.qiservice(ip, port, qistarted)
+#                print("Stopping Mics")
+#                threading.Thread(target=light.aiThinking, args=(started, )).start()
+#                naoai.connection_details.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt)
+#                started.clear()
+#            else:
+#                pass
+#
+#            for event in pygame.event.get():
+#                if event.type == pygame.QUIT:
+#                    done = True
+#

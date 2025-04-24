@@ -6,6 +6,7 @@ import threading
 from time import sleep
 import traceback
 from sys import exit
+import math
 
 # Argument Parser
 class connection_details():
@@ -26,7 +27,15 @@ class connection_details():
         if automode == False:
             controllerWalk(0)
         else:
-            autowalk()
+            obstacle = threading.Event()
+            obstacle.clear()
+            walkloop = threading.Thread(target=autowalk().walkLoop, args=(obstacle, 0))
+            sonars = threading.Thread(target=autowalk().sonars, args=(obstacle,))
+
+            walkloop.start()
+            sonars.start()
+            
+            
         
         
 # Controller walking function
@@ -79,10 +88,57 @@ def controllerWalk(isStarted):
 
         sleep(0.1)
 
-def autowalk():
-    while True:
+class autowalk():
+    def sonars(self, obstacle):
         walking.initSonar()
-        print(walking.sonarLeft())
+        self.sonarLeft = []
+        self.sonarRight = []
+        
+        while True:
+            self.sonarLeft.append(walking.sonarLeft())
+            if len(self.sonarLeft) > 5:
+                del self.sonarLeft[0]
+                self.leftAvg = math.fsum(self.sonarLeft) / len(self.sonarLeft)
+                #print(f"Left Average is: {leftAvg}")
+
+            self.sonarRight.append(walking.sonarRight())
+            if len(self.sonarRight) > 5:
+                del self.sonarRight[0]
+                self.rightAvg = math.fsum(self.sonarRight) / len(self.sonarRight)
+                #print(f"Right Average is: {rightAvg}")
+
+            if len(self.sonarLeft) > 5 and len(self.sonarRight) > 5:
+                if self.leftAvg < 0.5 or self.rightAvg < 0.5:
+                    self.avoid(obstacle)
+    
+    def avoid(self, obstacle):
+        obstacle.set()
+        print("Avoiding")
+        if self.leftAvg < 0.5 and self.rightAvg > 0.5:
+            walking.walkto(0, 0, 1)
+        elif self.rightAvg < 0.5 and self.leftAvg > 0.5:
+            walking.walkto(0, 0, -1)
+        else:
+            walking.walkto(0, 0, 1)
+        
+
+        
+        
+           
+               
+
+    def walkLoop(self, obstacle, isStarted):
+        walking.initMove(isStarted)
+        isStarted = 1
+        while True:
+            if obstacle.is_set() == False:
+                walking.walkto(-1, 0, 0)
+        
+
+    
+    
+    
+        
 
     
     

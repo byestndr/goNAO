@@ -6,6 +6,7 @@ from naoai import stoptts
 import threading
 from configparser import ConfigParser, NoOptionError
 from os import path
+from naoai import qiapi
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -64,6 +65,7 @@ elif args.gemini != True and args.model == "":
 try:
     if args.gemini == True and path.isfile(configpath) == True:
         api_key = config.get('Main', 'api_key')
+        model = "gemini"
     elif args.gemini == True and path.isfile(configpath) == False:
         keysave = input("Set a Gemini API key: ")
         config.set('Main', 'api_key', keysave)
@@ -73,6 +75,7 @@ try:
         model = "gemini"
     else:
         api_key = "none"
+
 except NoOptionError:
     keysave = input("Set a Gemini API key: ")
     config.set('Main', 'api_key', keysave)
@@ -81,7 +84,6 @@ except NoOptionError:
     api_key = config.get('Main', 'api_key')
     model = "gemini"
     
-
 # System prompt flag
 try:   
     if args.system == False and path.isfile(configpath) == True:
@@ -109,15 +111,20 @@ walkMode = threading.Event()
 walkMode.set()
 
 # Defines processes
-buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode))
-naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
+if args.auto == False:
+    buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode))
+    naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
 walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart, walkMode, args.auto))
 
 # Starts Processes
 try:
     walker.start()
-    buttonDetector.start()
-    naoTranscribeOff.start()
+    if args.auto == False:
+        buttonDetector.start()
+        naoTranscribeOff.start()
 except KeyboardInterrupt:
     print("Stopping")
     stoptts.connection_details.runFromMain(args.ip, args.port)
+    if args.auto == True:
+        print("Stopping sonars")
+        qiapi.stopSonar()
