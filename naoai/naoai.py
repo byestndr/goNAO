@@ -10,12 +10,13 @@ from multiprocessing import Process, Queue
 from os import path, remove
 import paramiko
 from ollama import chat, ChatResponse
+from time import sleep
 
 # This connects to the NAO
 class connection_details():
-    def runFromMainStart(ipadd, portnum, modelname, qistarted):
-        global ip, port, model
-        ip, port, model = ipadd, portnum, modelname
+    def runFromMainStart(ipadd, portnum, modelname, qistarted, auto):
+        global ip, port, model, qistart
+        ip, port, model, qistart = ipadd, portnum, modelname, qistarted
         try:
             # Initialize qi framework.
             global ipaddr, app, start_record
@@ -26,8 +27,15 @@ class connection_details():
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                    "Please check your script arguments. Run with -h option for help.")
             exit(1)
-        transcriber().queryingOn()
-
+        if auto == False:
+            transcriber().queryingOn()
+        elif auto == True:
+            while True:
+                sleep(20)
+                autotalk.getPicture()
+                autotalk.analyzePic()
+            
+    
     def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey, sysprompt):
         global ip, port, model
         ip, port, model = ipadd, portnum, modelname
@@ -90,7 +98,21 @@ class airesponse():
         response = response['message']['content']
         print(sub('[*]', " ", response))
         return(sub('[*]', " ", response))
-
+    def ollamaImage(self, path):
+        
+        response = chat(
+          model=model,
+          messages=[
+            {
+              'role': 'user',
+              'content': 'Quickly and sarcastically in a hilarious matter describe what is happening in this image. ',
+              'images': [path],
+            }
+          ],
+        )
+        
+        reply = response['message']['content']
+        return reply
 class transcriber():
     def queryingOn(self):
         # Checks to see if mics are on
@@ -152,3 +174,17 @@ class transcriber():
             if e == "Future canceled.":
                 print("Stopped talking")
 
+class autotalk():
+    def getPicture(self):
+        start_record.takePicture()
+        self.picfile = path.dirname(path.realpath(__file__))+"/picture.jpg"
+        # SCPs the file over to the host
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(ipaddr,22,username='nao',password='nao')
+        ssh.open_sftp().get('/home/nao/recordings/camera/frame.jpg', self.picfile)
+    def analyzePic(self):
+        reply = airesponse().ollamaImage(self.picfile)
+        if path.isfile(self.picfile) == True:
+            remove(self.picfile)
+        transcriber.tts(reply, qistart)

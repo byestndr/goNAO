@@ -1,6 +1,5 @@
 import argparse
 from sys import exit
-from walkingnao import buttonpresses
 from walkingnao import walk
 from naoai import stoptts
 import threading
@@ -26,6 +25,12 @@ else:
     exit(1)
 
 args = parser.parse_args()
+
+if args.auto == False:
+    from walkingnao import buttonpresses
+if args.auto == True:
+    from naoai import naoai
+
 
 scriptpath = (path.dirname(path.realpath(__file__)))
 configpath = scriptpath + "/config.ini"
@@ -114,6 +119,8 @@ walkMode.set()
 if args.auto == False:
     buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode))
     naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
+if args.auto == True:
+    autotalk = threading.Thread(target=naoai.connection_details().runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto))    
 walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart, walkMode, args.auto))
 
 # Starts Processes

@@ -32,6 +32,7 @@ class qiservice():
             self.behave = session.service("ALBehaviorManager")
             self.anim = session.service("ALAnimationPlayer")
             self.sonar = session.service("ALSonar")
+            self.pic = session.service("ALPhotoCapture")
 
         except Exception as e:
             print("Could not connect to service")
@@ -96,7 +97,11 @@ class qiservice():
             self.walkto(0, 0, 1)
         elif direction == "left":
             self.walkto(0, 0, -1)
-
+    def takePicture(self):
+        self.pic.setResolution(3)
+        self.pic.setColorSpace(13)
+        self.pic.setPictureFormat("jpg")
+        self.pic.takePicture("/home/nao/recordings/camera", "frame")
 
 
     def stopSonar(self):

@@ -122,7 +122,7 @@ class autowalk():
             walking.walkto(0, 0, 1)
         
 
-        
+
         
            
                
