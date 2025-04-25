@@ -6,6 +6,7 @@ import threading
 from configparser import ConfigParser, NoOptionError
 from os import path
 from naoai import qiapi
+from time import sleep
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -120,7 +121,7 @@ if args.auto == False:
     buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode))
     naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
 if args.auto == True:
-    autotalk = threading.Thread(target=naoai.connection_details().runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto))    
+    autotalk = threading.Thread(target=naoai.connection_details.runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto, api_key))    
 walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart, walkMode, args.auto))
 
 # Starts Processes
@@ -129,6 +130,9 @@ try:
     if args.auto == False:
         buttonDetector.start()
         naoTranscribeOff.start()
+    elif args.auto == True:
+        sleep(5)
+        autotalk.start()
 except KeyboardInterrupt:
     print("Stopping")
     stoptts.connection_details.runFromMain(args.ip, args.port)

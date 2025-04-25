@@ -1,7 +1,5 @@
 from naoai import qiapi
 from qi import Application
-from walkingnao import joytest
-import pygame
 import threading
 from time import sleep
 import traceback
@@ -40,6 +38,10 @@ class connection_details():
         
 # Controller walking function
 def controllerWalk(isStarted):
+    
+    from walkingnao import joytest
+    import pygame
+
     done = False
     while done == False:
         # Gets position for x and y axes on the left stick
@@ -110,6 +112,8 @@ class autowalk():
             if len(self.sonarLeft) > 5 and len(self.sonarRight) > 5:
                 if self.leftAvg < 0.5 or self.rightAvg < 0.5:
                     self.avoid(obstacle)
+                else:
+                    print("Normal")
     
     def avoid(self, obstacle):
         obstacle.set()
