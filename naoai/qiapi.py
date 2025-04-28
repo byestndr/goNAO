@@ -33,6 +33,8 @@ class qiservice():
             self.anim = session.service("ALAnimationPlayer")
             self.sonar = session.service("ALSonar")
             self.pic = session.service("ALPhotoCapture")
+            self.face = session.service("ALFaceDetection")
+            self.face.subscribe("Test_Face", 500, 0.0 )
 
         except Exception as e:
             print("Could not connect to service")
@@ -106,6 +108,9 @@ class qiservice():
 
     def stopSonar(self):
         self.sonar.unsubscribe("autowalk")
+
+    def faceDetection(self):
+        return self.mem.getData("FaceDetected", 0)
 
         
 

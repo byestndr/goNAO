@@ -1,6 +1,5 @@
 from naoai import qiapi
 from qi import Application
-import threading
 from time import sleep
 import traceback
 from sys import exit
@@ -25,14 +24,8 @@ class connection_details():
         if automode == False:
             controllerWalk(0)
         else:
-            obstacle = threading.Event()
-            obstacle.clear()
-            walkloop = threading.Thread(target=autowalk().walkLoop, args=(obstacle, 0))
-            sonars = threading.Thread(target=autowalk().sonars, args=(obstacle,))
-
-            walkloop.start()
-            sonars.start()
-            
+            walking.initMove(0)
+            autowalk().sonars()          
             
         
         
@@ -91,12 +84,15 @@ def controllerWalk(isStarted):
         sleep(0.1)
 
 class autowalk():
-    def sonars(self, obstacle):
+    def sonars(self):
         walking.initSonar()
         self.sonarLeft = []
         self.sonarRight = []
-        
+        self.leftAvg = 0
+        self.rightAvg = 0
+
         while True:
+            # Calculate sonar averages
             self.sonarLeft.append(walking.sonarLeft())
             if len(self.sonarLeft) > 5:
                 del self.sonarLeft[0]
@@ -108,41 +104,24 @@ class autowalk():
                 del self.sonarRight[0]
                 self.rightAvg = math.fsum(self.sonarRight) / len(self.sonarRight)
                 #print(f"Right Average is: {rightAvg}")
-
-            if len(self.sonarLeft) > 5 and len(self.sonarRight) > 5:
-                if self.leftAvg < 0.5 or self.rightAvg < 0.5:
-                    self.avoid(obstacle)
-                else:
-                    print("Normal")
-    
-    def avoid(self, obstacle):
-        obstacle.set()
+            
+            # Checks if the average is calculated yet and if it is less than 0.4
+            if self.leftAvg < 0.4 or self.rightAvg < 0.4 and walking.faceDetection() == []:
+                print(walking.faceDetection())
+                self.avoid()
+                sleep(1)
+            elif walking.faceDetection() == []:
+                print(walking.faceDetection())
+                walking.walkto(-1, 0, 0)
+            else:
+                print(walking.faceDetection())
+                walking.wave()    
+    def avoid(self):
         print("Avoiding")
-        if self.leftAvg < 0.5 and self.rightAvg > 0.5:
+        if self.leftAvg < 0.4 and self.rightAvg > 0.4:
             walking.walkto(0, 0, 1)
-        elif self.rightAvg < 0.5 and self.leftAvg > 0.5:
+        elif self.rightAvg < 0.4 and self.leftAvg > 0.4:
             walking.walkto(0, 0, -1)
         else:
             walking.walkto(0, 0, 1)
-        
-
-
-        
-           
-               
-
-    def walkLoop(self, obstacle, isStarted):
-        walking.initMove(isStarted)
-        isStarted = 1
-        while True:
-            if obstacle.is_set() == False:
-                walking.walkto(-1, 0, 0)
-        
-
-    
-    
-    
-        
-
-    
-    
+            

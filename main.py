@@ -1,7 +1,6 @@
 import argparse
 from sys import exit
 from walkingnao import walk
-from naoai import stoptts
 import threading
 from configparser import ConfigParser, NoOptionError
 from os import path
@@ -44,9 +43,9 @@ if args.gemini != True and args.model != "":
     response_object = ollama.list()
     model_list = response_object.models
 
-    # Checks if the list is empty or not
     models = []
-
+    
+    # Checks if the list is empty or not
     if model_list: 
         for model in model_list:
             models.append(model.model)
@@ -118,7 +117,7 @@ walkMode.set()
 
 # Defines processes
 if args.auto == False:
-    buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode))
+    buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode, args.auto, api_key))
     naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
 if args.auto == True:
     autotalk = threading.Thread(target=naoai.connection_details.runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto, api_key))    
@@ -134,8 +133,7 @@ try:
         sleep(5)
         autotalk.start()
 except KeyboardInterrupt:
-    print("Stopping")
-    stoptts.connection_details.runFromMain(args.ip, args.port)
     if args.auto == True:
         print("Stopping sonars")
         qiapi.stopSonar()
+    exit(0)

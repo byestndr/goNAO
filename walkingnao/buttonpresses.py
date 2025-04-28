@@ -8,7 +8,7 @@ import threading
 from time import sleep
 
 class joybutton():
-    def controllerButtons(self, ip, port, model, started, qistarted, walkmode):
+    def controllerButtons(self, ip, port, model, started, qistarted, walkmode, auto, apikey):
         done = False
         modes = ("walking", "headControl")
         currentMode = 0
@@ -28,7 +28,7 @@ class joybutton():
                 # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
-                naoai.connection_details.runFromMainStart(ip, port, model, qistarted)
+                naoai.connection_details.runFromMainStart(ip, port, model, qistarted, auto, apikey)
             # DPAD UP
             elif joytest.controller.hatpos() == (0, 1):
                 for x in modes:

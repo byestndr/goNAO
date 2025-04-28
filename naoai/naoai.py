@@ -3,7 +3,6 @@ from requests import post
 from re import sub
 from .qiapi import qiservice
 from sys import exit
-# from whisper import transcribe
 from faster_whisper import WhisperModel
 from multiprocessing import Process, Queue
 # import traceback
@@ -32,7 +31,7 @@ class connection_details():
             transcriber().queryingOn()
         elif auto == True:
             while True:
-                sleep(0)
+                sleep(60)
                 path = autotalk().getPicture()
                 autotalk.analyzePic(path, apikey)
             
@@ -133,7 +132,7 @@ class airesponse():
                     "data": image
                   }
                 },
-                {"text": "Your role is a robotic assistant whose job is to sarcastically in a hilarious matter describe what is happening in this image in one sentence."}
+                {"text": "Your role is a robotic assistant whose job is to sarcastically in a hilarious matter describe what is happening in this image in one sentenced."}
                 ]
             }],
             "safetySettings": [
@@ -220,10 +219,10 @@ class autotalk():
         return picfile
     def analyzePic(picfile, apikey):
         if model == "gemini":
-            reply = airesponse().geminiImage(picfile, apikey)
+            reply = airesponse.geminiImage(picfile, apikey)
         else:
             reply = airesponse().ollamaImage(picfile)
         
         if path.isfile(picfile) == True:
             remove(picfile)
-        transcriber.tts(reply, qistart)
+        transcriber.tts(reply)
