@@ -100,7 +100,7 @@ class qiservice():
         elif direction == "left":
             self.walkto(0, 0, -1)
     def takePicture(self):
-        self.pic.setResolution(3)
+        self.pic.setResolution(4)
         self.pic.setColorSpace(13)
         self.pic.setPictureFormat("jpg")
         self.pic.takePicture("/home/nao/recordings/camera", "frame")
