@@ -2,6 +2,7 @@ __pycache__/
 config.ini
 test.*
 request.wav
+frame.jpg
 main.build/
 main.dist/
 main.onefile-build/

@@ -1,11 +1,11 @@
 import argparse
 from sys import exit
-from walkingnao import buttonpresses
 from walkingnao import walk
-from naoai import stoptts
 import threading
 from configparser import ConfigParser, NoOptionError
 from os import path
+from naoai import qiapi
+from time import sleep
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -26,6 +26,12 @@ else:
 
 args = parser.parse_args()
 
+if args.auto == False:
+    from walkingnao import buttonpresses
+if args.auto == True:
+    from naoai import naoai
+
+
 scriptpath = (path.dirname(path.realpath(__file__)))
 configpath = scriptpath + "/config.ini"
 config = ConfigParser()
@@ -37,9 +43,9 @@ if args.gemini != True and args.model != "":
     response_object = ollama.list()
     model_list = response_object.models
 
-    # Checks if the list is empty or not
     models = []
-
+    
+    # Checks if the list is empty or not
     if model_list: 
         for model in model_list:
             models.append(model.model)
@@ -74,6 +80,7 @@ try:
         model = "gemini"
     else:
         api_key = "none"
+
 except NoOptionError:
     keysave = input("Set a Gemini API key: ")
     config.set('Main', 'api_key', keysave)
@@ -82,7 +89,6 @@ except NoOptionError:
     api_key = config.get('Main', 'api_key')
     model = "gemini"
     
-
 # System prompt flag
 try:   
     if args.system == False and path.isfile(configpath) == True:
@@ -110,15 +116,24 @@ walkMode = threading.Event()
 walkMode.set()
 
 # Defines processes
-buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode))
-naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
+if args.auto == False:
+    buttonDetector = threading.Thread(target=buttonpresses.joybutton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode, args.auto, api_key))
+    naoTranscribeOff = threading.Thread(target=buttonpresses.joybutton().OnAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
+if args.auto == True:
+    autotalk = threading.Thread(target=naoai.connection_details.runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto, api_key))    
 walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart, walkMode, args.auto))
 
 # Starts Processes
 try:
     walker.start()
-    buttonDetector.start()
-    naoTranscribeOff.start()
+    if args.auto == False:
+        buttonDetector.start()
+        naoTranscribeOff.start()
+    elif args.auto == True:
+        sleep(5)
+        autotalk.start()
 except KeyboardInterrupt:
-    print("Stopping")
-    stoptts.connection_details.runFromMain(args.ip, args.port)
+    if args.auto == True:
+        print("Stopping sonars")
+        qiapi.stopSonar()
+    exit(0)

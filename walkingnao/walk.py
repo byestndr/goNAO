@@ -1,11 +1,9 @@
 from naoai import qiapi
 from qi import Application
-from walkingnao import joytest
-import pygame
-import threading
 from time import sleep
 import traceback
 from sys import exit
+import math
 
 # Argument Parser
 class connection_details():
@@ -26,11 +24,17 @@ class connection_details():
         if automode == False:
             controllerWalk(0)
         else:
-            autowalk()
+            walking.initMove(0)
+            autowalk().sonars()          
+            
         
         
 # Controller walking function
 def controllerWalk(isStarted):
+    
+    from walkingnao import joytest
+    import pygame
+
     done = False
     while done == False:
         # Gets position for x and y axes on the left stick
@@ -79,10 +83,45 @@ def controllerWalk(isStarted):
 
         sleep(0.1)
 
-def autowalk():
-    while True:
+class autowalk():
+    def sonars(self):
         walking.initSonar()
-        print(walking.sonarLeft())
+        self.sonarLeft = []
+        self.sonarRight = []
+        self.leftAvg = 0
+        self.rightAvg = 0
 
-    
-    
+        while True:
+            # Calculate sonar averages
+            self.sonarLeft.append(walking.sonarLeft())
+            if len(self.sonarLeft) > 5:
+                del self.sonarLeft[0]
+                self.leftAvg = math.fsum(self.sonarLeft) / len(self.sonarLeft)
+                #print(f"Left Average is: {leftAvg}")
+
+            self.sonarRight.append(walking.sonarRight())
+            if len(self.sonarRight) > 5:
+                del self.sonarRight[0]
+                self.rightAvg = math.fsum(self.sonarRight) / len(self.sonarRight)
+                #print(f"Right Average is: {rightAvg}")
+            
+            # Checks if the average is calculated yet and if it is less than 0.4
+            if self.leftAvg < 0.4 or self.rightAvg < 0.4 and walking.faceDetection() == []:
+                self.avoid()
+                sleep(1)
+            elif walking.faceDetection() == []:
+                walking.walkto(-1, 0, 0)
+            else:
+                walking.stopMove()
+                walking.wave()
+                
+                sleep(1)
+    def avoid(self):
+        print("Avoiding")
+        if self.leftAvg < 0.4 and self.rightAvg > 0.4:
+            walking.walkto(0, 0, 1)
+        elif self.rightAvg < 0.4 and self.leftAvg > 0.4:
+            walking.walkto(0, 0, -1)
+        else:
+            walking.walkto(0, 0, 1)
+            

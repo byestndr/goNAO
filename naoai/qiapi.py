@@ -1,6 +1,7 @@
 from qi import Application
 import threading
 from sys import exit
+from time import sleep
 
 class qiservice():
     def __init__(self, ip, port, started):
@@ -31,6 +32,9 @@ class qiservice():
             self.behave = session.service("ALBehaviorManager")
             self.anim = session.service("ALAnimationPlayer")
             self.sonar = session.service("ALSonar")
+            self.pic = session.service("ALPhotoCapture")
+            self.face = session.service("ALFaceDetection")
+            self.face.subscribe("Test_Face", 500, 0.0 )
 
         except Exception as e:
             print("Could not connect to service")
@@ -86,11 +90,27 @@ class qiservice():
     def initSonar(self):
         self.sonar.subscribe("autowalk")
     def sonarLeft(self):
-        return self.mem.getData("SonarLeftDetected")
+        return self.mem.getData("Device/SubDeviceList/US/Left/Sensor/Value")
     def sonarRight(self):
-        return self.mem.getData("SonarRightDetected")
+        return self.mem.getData("Device/SubDeviceList/US/Right/Sensor/Value")
+    def obstacleDetected(self, obstacle, direction):
+        obstacle.set()
+        if direction == "right":
+            self.walkto(0, 0, 1)
+        elif direction == "left":
+            self.walkto(0, 0, -1)
+    def takePicture(self):
+        self.pic.setResolution(3)
+        self.pic.setColorSpace(13)
+        self.pic.setPictureFormat("jpg")
+        self.pic.takePicture("/home/nao/recordings/camera", "frame")
+
+
     def stopSonar(self):
         self.sonar.unsubscribe("autowalk")
+
+    def faceDetection(self):
+        return self.mem.getData("FaceDetected", 0)
 
         
 
