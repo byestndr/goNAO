@@ -107,15 +107,15 @@ class autowalk():
             
             # Checks if the average is calculated yet and if it is less than 0.4
             if self.leftAvg < 0.4 or self.rightAvg < 0.4 and walking.faceDetection() == []:
-                print(walking.faceDetection())
                 self.avoid()
                 sleep(1)
             elif walking.faceDetection() == []:
-                print(walking.faceDetection())
                 walking.walkto(-1, 0, 0)
             else:
-                print(walking.faceDetection())
-                walking.wave()    
+                walking.stopMove()
+                walking.wave()
+                
+                sleep(1)
     def avoid(self):
         print("Avoiding")
         if self.leftAvg < 0.4 and self.rightAvg > 0.4:
