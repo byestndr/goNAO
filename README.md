@@ -1,5 +1,5 @@
 # goNAO!
-Allow your NAO to walk and talk!
+Make your NAO to walk and talk!
 
 ## What have I done?
 
