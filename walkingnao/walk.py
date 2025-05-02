@@ -91,7 +91,12 @@ class autowalk():
         self.leftAvg = 0
         self.rightAvg = 0
 
+        
+
         while True:
+            if walking.fallDetection() == False:
+                walking.recover()
+
             # Calculate sonar averages
             self.sonarLeft.append(walking.sonarLeft())
             if len(self.sonarLeft) > 5:
@@ -109,13 +114,16 @@ class autowalk():
             if self.leftAvg < 0.4 or self.rightAvg < 0.4 and walking.faceDetection() == []:
                 self.avoid()
                 sleep(1)
-            elif walking.faceDetection() == []:
+            elif walking.faceDetection() == None or walking.faceDetection() == []:
                 walking.walkto(-1, 0, 0)
             else:
+                print(walking.faceDetection())
                 walking.stopMove()
                 walking.wave()
-                
+            
                 sleep(1)
+                
+            
     def avoid(self):
         print("Avoiding")
         if self.leftAvg < 0.4 and self.rightAvg > 0.4:

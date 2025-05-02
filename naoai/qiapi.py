@@ -104,26 +104,14 @@ class qiservice():
         self.pic.setColorSpace(13)
         self.pic.setPictureFormat("jpg")
         self.pic.takePicture("/home/nao/recordings/camera", "frame")
-
-
     def stopSonar(self):
         self.sonar.unsubscribe("autowalk")
-
     def faceDetection(self):
         return self.mem.getData("FaceDetected", 0)
-
-        
-
-    # Subscribes to robot fallen event and sees if robot falls
-    # def ifFallen(fallen):
-    #     return True
-    # def hasFallen(self):
-    #     fall = self.mem.subscriber("robotHasFallen")
-    #     fall.signal.connect(self.ifFallen)
-    
+    def fallDetection(self):
+        return self.mem.getData("ALMotion/RobotIsStand")
     # Attempts to recover robot
     def recover(self):
         self.pos.goToPosture("LyingBack", 0.6)
-        self.pos.goToPosture("Sit", 0.6)
         self.pos.goToPosture("StandInit", 0.6)
 
