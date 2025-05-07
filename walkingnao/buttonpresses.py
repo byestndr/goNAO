@@ -1,30 +1,30 @@
-from naoai import naoai
-from . import joytest
-from . import walk
-import pygame
-from naoai import qiapi
-from naoai import stoptts
-import threading
-from time import sleep
+""" Interface with the DualShock 4 """
 
-class joybutton():
+import threading
+import pygame
+from naoai import qiapi, stoptts, naoai
+from . import joytest
+
+class JoyButton():
+    """ Control what happens with what happens during button presses """
     def controllerButtons(self, ip, port, model, started, qistarted, walkmode, auto, apikey):
+        """ Watch for button presses """
         done = False
         modes = ("walking", "headControl")
-        currentMode = 0
-        while done == False:
+        current_mode = 0
+        while done is False:
             # Cross
             if joytest.controller.buttonStat(0) == 1:
                 pass
             # Circle
-            elif joytest.controller.buttonStat(1) == 1 and started.is_set() == False:
+            elif joytest.controller.buttonStat(1) == 1 and started.is_set() is False:
                 qiapi.qiservice(ip, port, qistarted).recover()
             # Square
             elif joytest.controller.buttonStat(3) == 1:
                 print("Waving")
                 qiapi.qiservice(ip, port, qistarted).wave()
             # Triangle
-            elif joytest.controller.buttonStat(2) == 1 and started.is_set() == False:
+            elif joytest.controller.buttonStat(2) == 1 and started.is_set() is False:
                 # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
@@ -33,28 +33,26 @@ class joybutton():
             elif joytest.controller.hatpos() == (0, 1):
                 for x in modes:
                     try:
-                        currentMode = modes.index(modes[currentMode+1])
-                        print(modes[currentMode])
+                        current_mode = modes.index(modes[current_mode+1])
+                        print(modes[current_mode])
                         walkmode.clear()
                         break
                     except IndexError:
                         pass
-                        
             # DPAD DOWN
-            elif joytest.controller.hatpos() == (0, -1) and currentMode != 0:
+            elif joytest.controller.hatpos() == (0, -1) and current_mode != 0:
                 for x in modes:
                     try:
-                        currentMode = modes.index(modes[currentMode-1])
-                        print(modes[currentMode])
+                        current_mode = modes.index(modes[current_mode-1])
+                        print(modes[current_mode])
                         walkmode.set()
                         print(walkmode.is_set())
                         break
                     except IndexError:
                         pass
             elif joytest.controller.buttonStat(9) == 1:
-                stoptts.connection_details.runFromMain(ip, port, qistarted)
+                stoptts.ConnectionDetails().runFromMain(ip, port, qistarted)
                 started.clear()
-                    
             # DPAD LEFT
             # elif joytest.controller.buttonStat(13) == 1:
             #     pass
@@ -65,10 +63,11 @@ class joybutton():
                 if event.type == pygame.QUIT:
                     done = True
 
-    def OnAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt):
+    def onAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt):
+        """ Actions to take when microphones turn off """
         done = False
-        while done == False:
-            if joytest.controller.buttonStat(1) == 1 and started.is_set() == True:
+        while done is False:
+            if joytest.controller.buttonStat(1) == 1 and started.is_set():
                 light = qiapi.qiservice(ip, port, qistarted)
                 print("Stopping Mics")
                 threading.Thread(target=light.aiThinking, args=(started, )).start()
@@ -80,4 +79,3 @@ class joybutton():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
-
