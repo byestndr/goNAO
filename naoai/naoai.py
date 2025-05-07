@@ -1,7 +1,6 @@
-print("Initializing modules...")
 from requests import post
 from re import sub
-from .qiapi import qiservice
+from .qiapi import QiService
 from sys import exit
 from faster_whisper import WhisperModel
 from multiprocessing import Process, Queue
@@ -21,7 +20,7 @@ class connection_details():
             # Initialize qi framework.
             global ipaddr, app, start_record
             ipaddr = ip
-            start_record = qiservice(ip, port, qistarted)
+            start_record = QiService(ip, port, qistarted)
 
         except RuntimeError:
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"

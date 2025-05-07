@@ -1,6 +1,6 @@
 import sys
 sys.path.append('../goNAO')
-from .qiapi import qiservice
+from .qiapi import QiService
 from qi import Application
 import argparse
 from sys import exit
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 def end(ip, port, qistarted):
     try:
         # Initialize qi framework.
-        stoptalk = qiservice(ip, port, qistarted)
+        stoptalk = QiService(ip, port, qistarted)
     except RuntimeError:
         print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                "Please check your script arguments. Run with -h option for help.")
