@@ -5,15 +5,16 @@ from naoai import qiapi
 from qi import Application
 
 # Argument Parser
-class connection_details():
+class ConnectionDetails():
     def runFromMain(ipadd, portnum, qistarted, mode, automode):
+        """ Class with methods for connecting to the NAO. """
         global ip, port, walkMode
         ip, port, walkMode = ipadd, portnum, mode
 
         try:
             # Initialize qi framework.
             global robot_api
-            robot_api = qiapi.qiservice(ip, port, qistarted)
+            robot_api = qiapi.QiService(ip, port, qistarted)
         except RuntimeError:
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
                 "Please check your script arguments. Run with -h option for help.")
@@ -29,8 +30,8 @@ class connection_details():
 # Controller walking function
 def controllerWalk(isStarted):
     """ Reads inputs from controller and changes speed of the robot according to its values """
-    from walkingnao import joytest
     import pygame
+    from walkingnao import joytest
 
     done = False
     while done is False:

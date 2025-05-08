@@ -36,8 +36,7 @@ class ConnectionDetails():
                 sleep(60)
                 path = AutoTalk().getPicture()
                 AutoTalk.analyzePic(path, apikey)
-            
-    
+
     def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey, sysprompt):
         """ Method for stopping the AI function"""
         global ip, port, model
@@ -57,7 +56,7 @@ class AiResponse():
         """ Module for communicating with Gemini and getting responses. Needs an API key. """
         # Sends the data to Gemini
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
-        
+
         data = {
             "system_instruction": {
                 "parts": 
@@ -77,7 +76,7 @@ class AiResponse():
             }
             ],
            }
-        
+
         response = post(url, headers={'Content-Type': 'application/json'}, json=data)
         # This is a debugging thingy
         # print(response)
@@ -107,7 +106,7 @@ class AiResponse():
         """ Module for sending images to Ollama and getting responses. """
         with open(path, "rb") as image_file:
             image = b64encode(image_file.read()).decode('utf-8')
-        
+
         response = chat(
           model=model,
           messages=[
@@ -118,10 +117,10 @@ class AiResponse():
             }
           ],
         )
-        
+
         reply = response['message']['content']
         return reply
-    
+
     def geminiImage(path, api_key):
         """ Module for sending images to Gemini and getting a response. An API key is needed. """
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
@@ -152,7 +151,7 @@ class AiResponse():
             }
             ],
            }
-        
+
         response = post(url, headers={'Content-Type': 'application/json'}, json=data)
         # This prints the result from Gemini
         # It converts the json into actual text and then regex's all the * out
@@ -180,7 +179,7 @@ class Transcriber():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ipaddr,22,username='nao',password='nao')
         ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', audfile)
-            
+
     def transcribing(self, model, say, apikey, sysprompt):
         """ 
         Transcribes the audio file to text and plugs the 
@@ -238,7 +237,7 @@ class AutoTalk():
             reply = AiResponse.geminiImage(picfile, apikey)
         else:
             reply = AiResponse().ollamaImage(picfile)
-        
+
         if path.isfile(picfile) is True:
             remove(picfile)
         Transcriber.tts(reply)

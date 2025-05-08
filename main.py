@@ -3,9 +3,9 @@ import threading
 from sys import exit
 from os import path
 from time import sleep
-from configparser import ConfigParser, NoOptionError
-from walkingnao import walk
-from naoai import qiapi
+from configparser import ConfigParser, NoOptionError, NoSectionError
+import walkingnao.walk as walk
+import naoai.qiapi as qiapi
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -38,31 +38,38 @@ config = ConfigParser()
 config.read(configpath)
 
 # Checks if you are using Ollama
-if args.gemini is not True and args.model is not "":
-    import ollama
-    response_object = ollama.list()
-    model_list = response_object.models
+try:
+    if args.gemini is not True and args.model != "":
+        import ollama
+        response_object = ollama.list()
+        model_list = response_object.models
 
-    models = []
+        models = []
 
-    # Checks if the list is empty or not
-    if model_list:
-        for model in model_list:
-            models.append(model.model)
-    else:
-        print("No models found, download some models or use Gemini")
-        exit(1)
-    if args.model not in models:
-        print("The model was not found. Make sure it is spelled right and if you've also typed its tag.")
-        print(f"Models available: {models}")
-        exit(1)
+        # Checks if the list is empty or not
+        if model_list:
+            for model in model_list:
+                models.append(model.model)
+        else:
+            print("No models found, download some models or use Gemini")
+            exit(1)
+        if args.model not in models:
+            print("The model was not found. Make sure it is spelled right and if you've also typed its tag.")
+            print(f"Models available: {models}")
+            exit(1)
 
+        config.set('Main', 'model', args.model)
+        with open(configpath, 'w') as configfile:
+            config.write(configfile)
+        model = config.get('Main', 'model')
+
+    elif args.gemini is not True and args.model == "":
+        model = config.get('Main', 'model')
+except NoSectionError:
+    config.add_section('Main')
     config.set('Main', 'model', args.model)
     with open(configpath, 'w') as configfile:
         config.write(configfile)
-    model = config.get('Main', 'model')
-
-elif args.gemini is not True and args.model is "":
     model = config.get('Main', 'model')
 
 # Get Gemini API key if it doesn't exist
@@ -87,6 +94,15 @@ except NoOptionError:
         config.write(configfile)
     api_key = config.get('Main', 'api_key')
     model = "gemini"
+except NoSectionError:
+    keysave = input("Set a Gemini API key: ")
+    config.add_section('Main')
+    config.set('Main', 'api_key', keysave)
+    with open(configpath, 'w') as configfile:
+        config.write(configfile)
+    api_key = config.get('Main', 'api_key')
+    model = "gemini"
+
 
 # System prompt flag
 try:
@@ -120,7 +136,7 @@ if args.auto is False:
     naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
 if args.auto is True:
     autotalk = threading.Thread(target=naoai.ConnectionDetails.runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto, api_key))
-walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart, walkMode, args.auto))
+walker = threading.Thread(target=walk.ConnectionDetails.runFromMain, args=(args.ip, args.port, qistart, walkMode, args.auto))
 
 # Starts Processes
 try:

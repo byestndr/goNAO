@@ -9,6 +9,7 @@ class QiService():
     def __init__(self, ip, port, started):
         if started.is_set() is False:
             try:
+                global app, session
                 connection_url = "tcp://" + ip + ":" + str(port)
                 app = Application(["goNAO", "--qi-url=" + connection_url])
 
