@@ -28,7 +28,7 @@ class JoyButton():
                 # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
-                naoai.connection_details.runFromMainStart(ip, port, model, qistarted, auto, apikey)
+                naoai.ConnectionDetails.runFromMainStart(ip, port, model, qistarted, auto, apikey)
             # DPAD UP
             elif joytest.controller.hatpos() == (0, 1):
                 for x in modes:
@@ -71,7 +71,7 @@ class JoyButton():
                 light = qiapi.qiservice(ip, port, qistarted)
                 print("Stopping Mics")
                 threading.Thread(target=light.aiThinking, args=(started, )).start()
-                naoai.connection_details.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt)
+                naoai.ConnectionDetails.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt)
                 started.clear()
             else:
                 pass

@@ -119,7 +119,7 @@ if args.auto is False:
     buttonDetector = threading.Thread(target=buttonpresses.JoyButton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode, args.auto, api_key))
     naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
 if args.auto is True:
-    autotalk = threading.Thread(target=naoai.connection_details.runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto, api_key))
+    autotalk = threading.Thread(target=naoai.ConnectionDetails.runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto, api_key))
 walker = threading.Thread(target=walk.connection_details.runFromMain, args=(args.ip, args.port, qistart, walkMode, args.auto))
 
 # Starts Processes
@@ -134,5 +134,5 @@ try:
 except KeyboardInterrupt:
     if args.auto is True:
         print("Stopping sonars")
-        qiapi.stopSonar()
+        qiapi.QiService(args.ip, args.port, qistart).stopSonar()
     exit(0)
