@@ -1,9 +1,8 @@
 """ Interface with the DualShock 4 """
-
 import threading
 import pygame
-from naoai import qiapi, stoptts, naoai
-from . import joytest
+from goNAO.naoai import qiapi, stoptts, naoai
+from goNAO.walkingnao import joystick
 
 class JoyButton():
     """ Control what happens with what happens during button presses """
@@ -14,23 +13,23 @@ class JoyButton():
         current_mode = 0
         while done is False:
             # Cross
-            if joytest.controller.buttonStat(0) == 1:
+            if joystick.controller.buttonStat(0) == 1:
                 pass
             # Circle
-            elif joytest.controller.buttonStat(1) == 1 and started.is_set() is False:
-                qiapi.qiservice(ip, port, qistarted).recover()
+            elif joystick.controller.buttonStat(1) == 1 and started.is_set() is False:
+                qiapi.QiService(ip, port, qistarted).recover()
             # Square
-            elif joytest.controller.buttonStat(3) == 1:
+            elif joystick.controller.buttonStat(3) == 1:
                 print("Waving")
-                qiapi.qiservice(ip, port, qistarted).wave()
+                qiapi.QiService(ip, port, qistarted).wave()
             # Triangle
-            elif joytest.controller.buttonStat(2) == 1 and started.is_set() is False:
+            elif joystick.controller.buttonStat(2) == 1 and started.is_set() is False:
                 # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
                 naoai.ConnectionDetails.runFromMainStart(ip, port, model, qistarted, auto, apikey)
             # DPAD UP
-            elif joytest.controller.hatpos() == (0, 1):
+            elif joystick.controller.hatpos() == (0, 1):
                 for x in modes:
                     try:
                         current_mode = modes.index(modes[current_mode+1])
@@ -40,7 +39,7 @@ class JoyButton():
                     except IndexError:
                         pass
             # DPAD DOWN
-            elif joytest.controller.hatpos() == (0, -1) and current_mode != 0:
+            elif joystick.controller.hatpos() == (0, -1) and current_mode != 0:
                 for x in modes:
                     try:
                         current_mode = modes.index(modes[current_mode-1])
@@ -50,7 +49,7 @@ class JoyButton():
                         break
                     except IndexError:
                         pass
-            elif joytest.controller.buttonStat(9) == 1:
+            elif joystick.controller.buttonStat(9) == 1:
                 stoptts.ConnectionDetails().runFromMain(ip, port, qistarted)
                 started.clear()
             # DPAD LEFT
@@ -67,8 +66,8 @@ class JoyButton():
         """ Actions to take when microphones turn off """
         done = False
         while done is False:
-            if joytest.controller.buttonStat(1) == 1 and started.is_set():
-                light = qiapi.qiservice(ip, port, qistarted)
+            if joystick.controller.buttonStat(1) == 1 and started.is_set():
+                light = qiapi.QiService(ip, port, qistarted)
                 print("Stopping Mics")
                 threading.Thread(target=light.aiThinking, args=(started, )).start()
                 naoai.ConnectionDetails.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt)

@@ -4,8 +4,8 @@ from sys import exit
 from os import path
 from time import sleep
 from configparser import ConfigParser, NoOptionError, NoSectionError
-import walkingnao.walk as walk
-import naoai.qiapi as qiapi
+import goNAO.walkingnao.walk as walk
+import goNAO.naoai.qiapi as qiapi
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -27,9 +27,9 @@ else:
 args = parser.parse_args()
 
 if args.auto is False:
-    from walkingnao import buttonpresses
+    from goNAO.walkingnao import buttonpresses
 if args.auto is True:
-    from naoai import naoai
+    from goNAO.naoai import naoai
 
 
 scriptpath = (path.dirname(path.realpath(__file__)))

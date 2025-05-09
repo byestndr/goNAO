@@ -1,8 +1,7 @@
 import math
 from time import sleep
 from sys import exit
-from naoai import qiapi
-from qi import Application
+import goNAO.naoai.qiapi as qiapi
 
 # Argument Parser
 class ConnectionDetails():
@@ -31,16 +30,16 @@ class ConnectionDetails():
 def controllerWalk(isStarted):
     """ Reads inputs from controller and changes speed of the robot according to its values """
     import pygame
-    from walkingnao import joytest
+    from goNAO.walkingnao import joystick
 
     done = False
     while done is False:
         # Gets position for x and y axes on the left stick
         # Controller Axes
-        y = joytest.controller.axispos(0)
-        x = joytest.controller.axispos(1)
+        y = joystick.controller.axispos(0)
+        x = joystick.controller.axispos(1)
         # Z is rotation
-        z = joytest.controller.axispos(3)
+        z = joystick.controller.axispos(3)
 
         # Checks if Z axis is being used
         if z > 0 or z < 0:

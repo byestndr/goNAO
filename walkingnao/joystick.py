@@ -1,7 +1,7 @@
-import pygame
 from os import environ
 from time import sleep
 from sys import exit
+import pygame
 environ['SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS]'] = '1'
 
 pygame.display.init()
