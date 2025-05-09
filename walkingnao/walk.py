@@ -1,7 +1,7 @@
 import math
 from time import sleep
 from sys import exit
-import goNAO.naoai.qiapi as qiapi
+import naoai.qiapi as qiapi
 
 # Argument Parser
 class ConnectionDetails():
@@ -30,7 +30,7 @@ class ConnectionDetails():
 def controllerWalk(isStarted):
     """ Reads inputs from controller and changes speed of the robot according to its values """
     import pygame
-    from goNAO.walkingnao import joystick
+    from walkingnao import joystick
 
     done = False
     while done is False:

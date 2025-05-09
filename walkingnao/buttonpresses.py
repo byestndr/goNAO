@@ -1,8 +1,8 @@
 """ Interface with the DualShock 4 """
 import threading
 import pygame
-from goNAO.naoai import qiapi, stoptts, naoai
-from goNAO.walkingnao import joystick
+from naoai import qiapi, stoptts, naoai
+from walkingnao import joystick
 
 class JoyButton():
     """ Control what happens with what happens during button presses """

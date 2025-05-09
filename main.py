@@ -4,8 +4,8 @@ from sys import exit
 from os import path
 from time import sleep
 from configparser import ConfigParser, NoOptionError, NoSectionError
-import goNAO.walkingnao.walk as walk
-import goNAO.naoai.qiapi as qiapi
+import walkingnao.walk as walk
+import naoai.qiapi as qiapi
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -27,9 +27,9 @@ else:
 args = parser.parse_args()
 
 if args.auto is False:
-    from goNAO.walkingnao import buttonpresses
+    from walkingnao import buttonpresses
 if args.auto is True:
-    from goNAO.naoai import naoai
+    from naoai import naoai
 
 
 scriptpath = (path.dirname(path.realpath(__file__)))
@@ -59,7 +59,7 @@ try:
             exit(1)
 
         config.set('Main', 'model', args.model)
-        with open(configpath, 'w') as configfile:
+        with open(configpath, 'w', encoding="utf-8") as configfile:
             config.write(configfile)
         model = config.get('Main', 'model')
 
@@ -68,7 +68,7 @@ try:
 except NoSectionError:
     config.add_section('Main')
     config.set('Main', 'model', args.model)
-    with open(configpath, 'w') as configfile:
+    with open(configpath, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
     model = config.get('Main', 'model')
 
@@ -80,7 +80,7 @@ try:
     elif args.gemini is True and path.isfile(configpath) is False:
         keysave = input("Set a Gemini API key: ")
         config.set('Main', 'api_key', keysave)
-        with open(configpath, 'w') as configfile:
+        with open(configpath, 'w', encoding="utf-8") as configfile:
             config.write(configfile)
         api_key = config.get('Main', 'api_key')
         model = "gemini"
@@ -90,7 +90,7 @@ try:
 except NoOptionError:
     keysave = input("Set a Gemini API key: ")
     config.set('Main', 'api_key', keysave)
-    with open(configpath, 'w') as configfile:
+    with open(configpath, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
     api_key = config.get('Main', 'api_key')
     model = "gemini"
@@ -98,7 +98,7 @@ except NoSectionError:
     keysave = input("Set a Gemini API key: ")
     config.add_section('Main')
     config.set('Main', 'api_key', keysave)
-    with open(configpath, 'w') as configfile:
+    with open(configpath, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
     api_key = config.get('Main', 'api_key')
     model = "gemini"
@@ -111,13 +111,13 @@ try:
     elif args.system is True or path.isfile(configpath) is False:
         keysave = input("Set a system prompt: ")
         config.set('Main', 'system_prompt', keysave)
-        with open(configpath, 'w') as configfile:
+        with open(configpath, 'w', encoding="utf-8") as configfile:
             config.write(configfile)
         sysprompt = config.get('Main', 'system_prompt')
 except NoOptionError:
     keysave = input("Set a system prompt: ")
     config.set('Main', 'system_prompt', keysave)
-    with open(configpath, 'w') as configfile:
+    with open(configpath, 'w', encoding="utf-8") as configfile:
         config.write(configfile)
     sysprompt = config.get('Main', 'system_prompt')
 

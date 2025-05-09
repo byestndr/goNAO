@@ -1,5 +1,5 @@
 import sys
-from goNAO.naoai.qiapi import QiService
+from naoai.qiapi import QiService
 sys.path.append('../goNAO')
 
 class ConnectionDetails():
