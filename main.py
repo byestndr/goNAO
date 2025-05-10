@@ -4,7 +4,7 @@ from sys import exit
 from time import sleep
 from resource.config import Configuration as config
 import walkingnao.walk as walk
-import naoai.qiapi as qiapi
+import resource.qiapi as qiapi
 import walkingnao.autowalk as autowalk
 
 if __name__ == "__main__":

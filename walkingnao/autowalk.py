@@ -1,7 +1,7 @@
 import math
 from time import sleep
 from sys import exit
-import naoai.qiapi as qiapi
+import resource.qiapi as qiapi
 
 # Argument Parser
 class ConnectionDetails():

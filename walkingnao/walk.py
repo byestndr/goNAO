@@ -1,7 +1,7 @@
 from time import sleep
 from sys import exit
 import pygame
-import naoai.qiapi as qiapi
+import resource.qiapi as qiapi
 from walkingnao import joystick
 
 # Argument Parser

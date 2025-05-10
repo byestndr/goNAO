@@ -9,7 +9,7 @@ from requests import post
 import paramiko
 from faster_whisper import WhisperModel
 from ollama import chat, ChatResponse
-from naoai.qiapi import QiService
+from resource.qiapi import QiService
 # import traceback
 
 # This connects to the NAO
