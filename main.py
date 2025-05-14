@@ -12,7 +12,7 @@ if __name__ == "__main__":
     parser.add_argument("--ip", type=str, default="127.0.0.1",
                         help="IP address for the NAO robot. Cannot be a simulated robot as they are not supported")
     parser.add_argument("--port", type=int, default=9559,
-                        help="NAO port")
+                        help="NAO port (Defaults to port 9559)")
 
     exclude_models = parser.add_mutually_exclusive_group(required=False)
     exclude_models.add_argument("--model", help="Choose an AI model for NAO to use. If it is not set, it defaults to the last used model.")
