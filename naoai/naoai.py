@@ -21,9 +21,9 @@ class ConnectionDetails():
         ip, port, model, qistart = ipadd, portnum, modelname, qistarted
         try:
             # Initialize qi framework.
-            global ipaddr, app, start_record
+            global ipaddr, robot_api
             ipaddr = ip
-            start_record = QiService(ip, port, qistarted)
+            robot_api = QiService(ip, port, qistarted)
 
         except RuntimeError:
             print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
@@ -165,12 +165,12 @@ class Transcriber():
     def queryingOn(self):
         """ Turns on the microphones and defines where to save the audio file. """
         channels = [0, 0, 1, 0]
-        start_record.stopRecord()
-        start_record.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
+        robot_api.stopRecord()
+        robot_api.startRecord("/home/nao/recordings/microphones/request.wav", "wav", 48000, channels)
         print("SPEAK NOW")            
     def queryingOff(self):
         """ Turns off the microphone and transfers the file over to the computer """
-        start_record.stopRecord()
+        robot_api.stopRecord()
         global audfile
         audfile = path.dirname(path.realpath(__file__))+"/request.wav"
         print(audfile)
@@ -214,7 +214,7 @@ class Transcriber():
         """ Makes the robot say whatever is in the reply parameter """
         try:
             print("Starting talk")
-            start_record.speechTalk(reply)
+            robot_api.speechTalk(reply)
         except RuntimeError as e:
             if e == "Future canceled.":
                 print("Stopped talking")
@@ -223,7 +223,7 @@ class AutoTalk():
     """ Class for defining the methods to make the robot auto talk """
     def getPicture(self):
         """ Method that takes a picture and transfers it to the computer """
-        start_record.takePicture()
+        robot_api.takePicture()
         picfile = path.dirname(path.realpath(__file__))+"/frame.jpg"
         # SCPs the file over to the host
         ssh = paramiko.SSHClient()
