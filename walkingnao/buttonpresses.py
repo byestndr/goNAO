@@ -2,7 +2,7 @@
 import threading
 import pygame
 from naoai import stoptts, naoai
-from resource.qiapi import QiService
+import resource.qiapi as qiapi
 from walkingnao import joystick
 
 class JoyButton():
