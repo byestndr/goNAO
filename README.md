@@ -1,6 +1,10 @@
 # goNAO!
 Make your NAO to walk and talk!
 
+## Setup
+Use any Python version 3.7 - 3.11 as libqi bindings are only available for those versions. This project has only been tested on Python 3.11.
+Make sure that dependencies from [requirements.txt](https://github.com/byestndr/goNAO/blob/main/requirements.txt) are installed.
+
 ## Usage
 To use, clone this repo and run the main python file with the IP address of the NAO and the AI model you want to use.
 ```
@@ -52,4 +56,4 @@ There are many features I would love to add and some of these are under this to-
 - [libqi](https://github.com/aldebaran/libqi) - Interfacing with the NAO robot
 
 ## License
-goNAO licensed under the GNU GPL version 3 license. More info is in [LICENSE](https://github.com/byestndr/goNAO/blob/main/LICENSE).
+goNAO is licensed under the GNU GPL version 3 license. More info is in [LICENSE](https://github.com/byestndr/goNAO/blob/main/LICENSE).
