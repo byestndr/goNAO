@@ -30,10 +30,10 @@ def controllerWalk(isStarted):
     while done is False:
         # Gets position for x and y axes on the left stick
         # Controller Axes
-        y = joystick.controller.axispos(0)
-        x = joystick.controller.axispos(1)
+        y = joystick.controller().axispos(0)
+        x = joystick.controller().axispos(1)
         # Z is rotation
-        z = joystick.controller.axispos(3)
+        z = joystick.controller().axispos(3)
 
         # Checks if Z axis is being used
         if z > 0 or z < 0:

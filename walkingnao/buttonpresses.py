@@ -14,23 +14,23 @@ class JoyButton():
         current_mode = 0
         while done is False:
             # Cross
-            if joystick.controller.buttonStat(0) == 1:
+            if joystick.controller().buttonStat(0) == 1:
                 pass
             # Circle
-            elif joystick.controller.buttonStat(1) == 1 and started.is_set() is False:
+            elif joystick.controller().buttonStat(1) == 1 and started.is_set() is False:
                 qiapi.QiService(ip, port, qistarted).recover()
             # Square
-            elif joystick.controller.buttonStat(3) == 1:
+            elif joystick.controller().buttonStat(3) == 1:
                 print("Waving")
                 qiapi.QiService(ip, port, qistarted).wave()
             # Triangle
-            elif joystick.controller.buttonStat(2) == 1 and started.is_set() is False:
+            elif joystick.controller().buttonStat(2) == 1 and started.is_set() is False:
                 # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
                 naoai.ConnectionDetails.runFromMainStart(ip, port, model, qistarted, auto, apikey)
             # DPAD UP
-            elif joystick.controller.hatpos() == (0, 1):
+            elif joystick.controller().hatpos() == (0, 1):
                 for x in modes:
                     try:
                         current_mode = modes.index(modes[current_mode+1])
@@ -40,7 +40,7 @@ class JoyButton():
                     except IndexError:
                         pass
             # DPAD DOWN
-            elif joystick.controller.hatpos() == (0, -1) and current_mode != 0:
+            elif joystick.controller().hatpos() == (0, -1) and current_mode != 0:
                 for x in modes:
                     try:
                         current_mode = modes.index(modes[current_mode-1])
@@ -50,7 +50,7 @@ class JoyButton():
                         break
                     except IndexError:
                         pass
-            elif joystick.controller.buttonStat(9) == 1:
+            elif joystick.controller().buttonStat(9) == 1:
                 stoptts.ConnectionDetails().runFromMain(ip, port, qistarted)
                 started.clear()
             # DPAD LEFT
@@ -67,7 +67,7 @@ class JoyButton():
         """ Actions to take when microphones turn off """
         done = False
         while done is False:
-            if joystick.controller.buttonStat(1) == 1 and started.is_set():
+            if joystick.controller().buttonStat(1) == 1 and started.is_set():
                 light = qiapi.QiService(ip, port, qistarted)
                 print("Stopping Mics")
                 threading.Thread(target=light.aiThinking, args=(started, )).start()
