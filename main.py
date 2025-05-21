@@ -1,11 +1,13 @@
 import argparse
 import threading
-from sys import exit
+from sys import exit, argv
 from time import sleep
 from resource.config import Configuration as config
 import walkingnao.walk as walk
 import resource.qiapi as qiapi
 import walkingnao.autowalk as autowalk
+from naoai import naoai
+from walkingnao import buttonpresses
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -20,19 +22,86 @@ if __name__ == "__main__":
 
     parser.add_argument("-s", "--system", action="store_true", help="Set the system prompt to use by the AI")
     parser.add_argument("--auto", "-a", action="store_true", help="Turns on autonomous mode (beta)")
+    parser.add_argument("--cli", "-c", action="store_true", help="Use the program as a CLI instead of the GUI")
 else:
     raise RuntimeError("Script must be run as main")
     exit(1)
 
 args = parser.parse_args()
 
-if args.auto is False:
-    from walkingnao import buttonpresses
-if args.auto is True:
-    from naoai import naoai
+if args.cli is False:
+    from PySide6 import QtWidgets
+
+    from window import Ui_MainWindow
+
+
+    class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
+        def __init__(self):
+            super().__init__()
+            self.setupUi(self)
+            self.api_key.setText(config().geminiApiKeyGUI())
+            self.pushButton.clicked.connect(self.connectPushed)
+            self.pushButton_2.clicked.connect(self.disconnectPushed)
+        def connectPushed(self):
+            self.appendLog(f"Connecting to {self.ip_address.text()}:{self.port_num.text()}")
+            if self.gemini_button.isChecked() is False and self.ollama_button.isChecked() is False:
+                self.appendLog("Please select a model")
+                return
+                
+            if self.gemini_button.isChecked() is True:
+                global api_key
+                model = "gemini"
+                api_key = self.api_key.text()
+            if self.gemini_button.isChecked() is True and api_key == "":
+                self.appendLog("Enter a Gemini API key to use gemini")
+                return
+            if self.gemini_button.isChecked() is True and api_key:
+                config().geminiSaveKeyGUI(api_key)
+
+            if self.ollama_button.isChecked() is True:           
+                modelInput = self.lineEdit.text()
+                model = config().modelType(modelInput)
+            if self.ollama_button.isChecked() is True and model == "":
+                self.appendLog("Please enter a model.")
+                return
+
+            if model == 1:
+                self.appendLog("No models found, download some models or use Gemini")
+                return
+            elif 'available' in model:
+                self.appendLog("The model was not found. Make sure it is spelled right and if you've also typed its tag.")
+                self.appendLog(model)
+                return
+
+        def disconnectPushed(self):
+            self.appendLog("Disconnecting...")
+        def appendLog(self, text):
+            self.plainTextEdit.appendPlainText(text)
+
+
+    app = QtWidgets.QApplication(argv)
+
+    window = MainWindow()
+    window.show()
+    app.exec()
+    exit(0)
+
+
+
+
+
+
+# CLI Code
 
 if args.gemini is False:
     model = config().modelType(args.model)
+    if model == 1:
+        print("No models found, download some models or use Gemini")
+        exit(1)
+    elif 'available' in model:
+        print("The model was not found. Make sure it is spelled right and if you've also typed its tag.")
+        print(model)
+        exit(1)
     api_key = None
 elif args.gemini is True:
     model = "gemini"

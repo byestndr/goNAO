@@ -26,13 +26,10 @@ class Configuration():
                     for model in model_list:
                         models.append(model.model)
                 else:
-                    print("No models found, download some models or use Gemini")
-                    exit(1)
+                    return 1
                 if modelname not in models:
-                    print("The model was not found. Make sure it is spelled right and if you've also typed its tag.")
-                    print(f"Models available: {models}")
-                    exit(1)
-
+                    no_models = f"Models available: {models}"
+                    return no_models
                 self.config.set('Main', 'model', modelname)
                 with open(self.configpath, 'w', encoding="utf-8") as configfile:
                     self.config.write(configfile)
@@ -73,6 +70,31 @@ class Configuration():
             with open(self.configpath, 'w', encoding="utf-8") as configfile:
                 self.config.write(configfile)
             return self.config.get('Main', 'api_key')
+
+    # Bit weird having another class for this but whatever
+    def geminiApiKeyGUI(self):
+        """ Read the Gemini API key graphically """
+        # Get Gemini API key if it doesn't exist
+        try:
+            if path.isfile(self.configpath) is True:
+                return self.config.get('Main', 'api_key')
+            else:
+                return ""
+        except NoOptionError:
+            return ""
+    # Even weirder there's a whole other method for saving a key
+    def geminiSaveKeyGUI(self, apikey):
+        try:
+            keysave = apikey
+            self.config.set('Main', 'api_key', keysave)
+            with open(self.configpath, 'w', encoding="utf-8") as configfile:
+                self.config.write(configfile)
+        except NoSectionError:
+            keysave = apikey
+            self.config.add_section('Main')
+            self.config.set('Main', 'api_key', keysave)
+            with open(self.configpath, 'w', encoding="utf-8") as configfile:
+                self.config.write(configfile)
 
     def systemPrompt(self, systemFlag):
         """ Set the system prompt to use with the AI """
