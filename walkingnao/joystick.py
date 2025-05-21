@@ -32,11 +32,4 @@ class controller:
     def hatpos():
         return self.joys.get_hat(0)
 
-done = False
-while done == False:
-    print(controller().axispos(1))
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            print("Done")
-            done = True
+#done = False
