@@ -126,3 +126,23 @@ class Configuration():
             with open(self.configpath, 'w', encoding="utf-8") as configfile:
                 self.config.write(configfile)
             return self.config.get('Main', 'system_prompt')
+    def systemPromptGui(self):
+        try:
+            if path.isfile(self.configpath) is True:
+                return self.config.get('Main', 'system_prompt')
+            else:
+                return ""
+        except NoOptionError:
+            return ""
+    def sysSaveKeyGUI(self, prompt):
+        try:
+            keysave = prompt
+            self.config.set('Main', 'system_prompt', keysave)
+            with open(self.configpath, 'w', encoding="utf-8") as configfile:
+                self.config.write(configfile)
+        except NoSectionError:
+            keysave = prompt
+            self.config.add_section('Main')
+            self.config.set('Main', 'system_prompt', keysave)
+            with open(self.configpath, 'w', encoding="utf-8") as configfile:
+                self.config.write(configfile)
