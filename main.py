@@ -32,7 +32,7 @@ args = parser.parse_args()
 if args.cli is False:
     from PySide6 import QtWidgets
 
-    from window import Ui_MainWindow
+    from ui.window import Ui_MainWindow
 
 
     class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -47,7 +47,7 @@ if args.cli is False:
             if self.gemini_button.isChecked() is False and self.ollama_button.isChecked() is False:
                 self.appendLog("Please select a model")
                 return
-                
+
             if self.gemini_button.isChecked() is True:
                 global api_key
                 model = "gemini"
@@ -63,7 +63,7 @@ if args.cli is False:
                 model = config().modelType(modelInput)
             if self.ollama_button.isChecked() is True and model == "":
                 self.appendLog("Please enter a model.")
-                return
+                return                
 
             if model == 1:
                 self.appendLog("No models found, download some models or use Gemini")
@@ -72,6 +72,9 @@ if args.cli is False:
                 self.appendLog("The model was not found. Make sure it is spelled right and if you've also typed its tag.")
                 self.appendLog(model)
                 return
+            if self.ollama_button.isChecked() is True and model:
+                config().modelSaveGUI(modelInput)
+
 
         def disconnectPushed(self):
             self.appendLog("Disconnecting...")

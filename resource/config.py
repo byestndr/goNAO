@@ -95,6 +95,18 @@ class Configuration():
             self.config.set('Main', 'api_key', keysave)
             with open(self.configpath, 'w', encoding="utf-8") as configfile:
                 self.config.write(configfile)
+    def modelSaveGUI(self, modelname):
+        try:
+            keysave = modelname
+            self.config.set('Main', 'model', keysave)
+            with open(self.configpath, 'w', encoding="utf-8") as configfile:
+                self.config.write(configfile)
+        except NoSectionError:
+            keysave = modelname
+            self.config.add_section('Main')
+            self.config.set('Main', 'model', keysave)
+            with open(self.configpath, 'w', encoding="utf-8") as configfile:
+                self.config.write(configfile)
 
     def systemPrompt(self, systemFlag):
         """ Set the system prompt to use with the AI """
