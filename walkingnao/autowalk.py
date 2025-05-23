@@ -6,7 +6,7 @@ import resource.qiapi as qiapi
 # Argument Parser
 class ConnectionDetails():
     """ Class with methods for connecting to the NAO. """
-    def runFromMain(ipadd, portnum, qistarted):
+    def runFromMain(ipadd, portnum, qistarted, stop):
         """ Method for connecting to NAO and starting autowalk """
         global ip, port
         ip, port = ipadd, portnum
@@ -22,7 +22,7 @@ class ConnectionDetails():
         print("Starting autowalk")
 
         robot_api.initMove(0)
-        AutoWalk().sonars()
+        AutoWalk().sonars(stop)
 
 class AutoWalk():
     """ Class called upon when autowalk mode is enabled """
@@ -31,11 +31,13 @@ class AutoWalk():
         self.sonarRight = []
         self.leftAvg = 0
         self.rightAvg = 0
-    def sonars(self):
+    def sonars(self, stop):
         """ Receive values from sonar and avoids obstacles based on those values """
         robot_api.initSonar()
+        if type(stop) == threading.Event:
+            stop = stop.is_set()
 
-        while True:
+        while stop is False:
             if robot_api.fallDetection() is False:
                 robot_api.recover()
 
@@ -63,6 +65,9 @@ class AutoWalk():
                 robot_api.stopMove()
                 robot_api.wave()
                 sleep(1)
+            robot_api.stopMove()
+            robot_api.stopSonar()
+            return
 
     def avoid(self):
         """ Called when the robot needs to avoid an obstacle """

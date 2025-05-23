@@ -7,12 +7,16 @@ from walkingnao import joystick
 
 class JoyButton():
     """ Control what happens with what happens during button presses """
-    def controllerButtons(self, ip, port, model, started, qistarted, walkmode, auto, apikey):
+    def controllerButtons(self, ip, port, model, started, qistarted, walkmode, auto, apikey, stop=False):
         """ Watch for button presses """
         done = False
         modes = ("walking", "headControl")
         current_mode = 0
-        while done is False:
+
+        if type(stop) == threading.Event:
+            stop = stop.is_set()
+
+        while done is False and stop is False:
             # Cross
             if joystick.controller().buttonStat(0) == 1:
                 pass
@@ -62,11 +66,14 @@ class JoyButton():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
+        return
 
-    def onAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt):
+    def onAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt, stop=False):
         """ Actions to take when microphones turn off """
         done = False
-        while done is False:
+        if type(stop) == threading.Event:
+            stop = stop.is_set()
+        while done is False and stop is False:
             if joystick.controller().buttonStat(1) == 1 and started.is_set():
                 light = qiapi.QiService(ip, port, qistarted)
                 print("Stopping Mics")
@@ -79,3 +86,4 @@ class JoyButton():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
+        return

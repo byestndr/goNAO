@@ -15,7 +15,7 @@ from resource.qiapi import QiService
 # This connects to the NAO
 class ConnectionDetails():
     """ Class with methods for connecting to the NAO. """
-    def runFromMainStart(ipadd, portnum, modelname, qistarted, auto, apikey):
+    def runFromMainStart(ipadd, portnum, modelname, qistarted, auto, apikey, stop=False):
         """ Method for starting the AI function """
         global ip, port, model, qistart
         ip, port, model, qistart = ipadd, portnum, modelname, qistarted
@@ -32,10 +32,14 @@ class ConnectionDetails():
         if auto is False:
             Transcriber().queryingOn()
         elif auto is True:
-            while True:
+            if type(stop) == threading.Event:
+                stop = stop.is_set()
+            while stop is False:
                 sleep(60)
                 path = AutoTalk().getPicture()
                 AutoTalk.analyzePic(path, apikey)
+            robot_api.stopTalk()
+            return
 
     def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey, sysprompt):
         """ Method for stopping the AI function"""
