@@ -81,7 +81,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def config(self):
         """ Set variable values and return one if a value is not found """
         if self.gemini_button.isChecked() is False and self.ollama_button.isChecked() is False:
-            self.appendLog("Please select a model")
+            self.appendLog("Please select between Ollama or Gemini")
             return 1
 
         if self.gemini_button.isChecked() is True:
@@ -98,7 +98,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             modelInput = self.lineEdit.text()
             self.model = config().modelType(modelInput)
         if self.ollama_button.isChecked() is True and self.model == "":
-            self.appendLog("Please enter a model.")
+            self.appendLog("Please enter an ollama model to use.")
             return 1
 
         if self.model == 1:

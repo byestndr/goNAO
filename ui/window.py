@@ -25,7 +25,7 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setEnabled(True)
-        MainWindow.resize(921, 686)
+        MainWindow.resize(921, 687)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_3 = QHBoxLayout(self.centralwidget)
@@ -195,30 +195,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.groupBox)
 
-        self.groupBox_3 = QGroupBox(self.widget_3)
-        self.groupBox_3.setObjectName(u"groupBox_3")
-        self.horizontalLayout_8 = QHBoxLayout(self.groupBox_3)
-        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.groupBox_6 = QGroupBox(self.groupBox_3)
-        self.groupBox_6.setObjectName(u"groupBox_6")
-        self.verticalLayout_5 = QVBoxLayout(self.groupBox_6)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.head_con = QRadioButton(self.groupBox_6)
-        self.head_con.setObjectName(u"head_con")
-
-        self.verticalLayout_5.addWidget(self.head_con)
-
-        self.walk_con = QRadioButton(self.groupBox_6)
-        self.walk_con.setObjectName(u"walk_con")
-
-        self.verticalLayout_5.addWidget(self.walk_con)
-
-
-        self.horizontalLayout_8.addWidget(self.groupBox_6)
-
-
-        self.verticalLayout_2.addWidget(self.groupBox_3)
-
 
         self.horizontalLayout_7.addWidget(self.widget_3)
 
@@ -243,7 +219,6 @@ class Ui_MainWindow(object):
         self.pushButton.clicked["bool"].connect(self.pushButton.setEnabled)
         self.pushButton_2.clicked["bool"].connect(self.pushButton.setDisabled)
         self.pushButton_2.clicked["bool"].connect(self.pushButton_2.setEnabled)
-        self.checkBox.toggled.connect(self.groupBox_6.setDisabled)
         self.gemini_button.clicked["bool"].connect(self.widget_7.setDisabled)
         self.ollama_button.clicked["bool"].connect(self.widget_7.setEnabled)
 
@@ -271,10 +246,6 @@ class Ui_MainWindow(object):
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"System Prompt", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Gemini API key", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Model", None))
-        self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Walk", None))
-        self.groupBox_6.setTitle(QCoreApplication.translate("MainWindow", u"Control Mode", None))
-        self.head_con.setText(QCoreApplication.translate("MainWindow", u"Head control", None))
-        self.walk_con.setText(QCoreApplication.translate("MainWindow", u"Walking Control", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Configure", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Controller", None))
     # retranslateUi
