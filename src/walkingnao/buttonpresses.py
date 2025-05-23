@@ -68,7 +68,7 @@ class JoyButton():
                     done = True
         return
 
-    def onAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt, stop=False):
+    def onAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt, stop=False, log=None):
         """ Actions to take when microphones turn off """
         done = False
         if type(stop) == threading.Event:
@@ -78,7 +78,7 @@ class JoyButton():
                 light = qiapi.QiService(ip, port, qistarted)
                 print("Stopping Mics")
                 threading.Thread(target=light.aiThinking, args=(started, )).start()
-                naoai.ConnectionDetails.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt)
+                naoai.ConnectionDetails.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt, log)
                 started.clear()
             else:
                 pass

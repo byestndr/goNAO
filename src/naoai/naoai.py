@@ -3,6 +3,7 @@ from time import sleep
 from sys import exit
 from os import path, remove
 from multiprocessing import Process, Queue
+from queue import Queue as logQueue
 from re import sub
 from base64 import b64encode
 from requests import post
@@ -15,7 +16,7 @@ from resource.qiapi import QiService
 # This connects to the NAO
 class ConnectionDetails():
     """ Class with methods for connecting to the NAO. """
-    def runFromMainStart(ipadd, portnum, modelname, qistarted, auto, apikey, stop=False):
+    def runFromMainStart(ipadd, portnum, modelname, qistarted, auto, apikey, stop=False, log=None):
         """ Method for starting the AI function """
         global ip, port, model, qistart
         ip, port, model, qistart = ipadd, portnum, modelname, qistarted
@@ -37,20 +38,22 @@ class ConnectionDetails():
             while stop is False:
                 sleep(60)
                 path = AutoTalk().getPicture()
-                AutoTalk.analyzePic(path, apikey)
+                AutoTalk.analyzePic(path, apikey, log)
             robot_api.stopTalk()
             return
 
-    def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey, sysprompt):
+    def runFromMainStop(ipadd, portnum, modelname, qistarted, apikey, sysprompt, log=None):
         """ Method for stopping the AI function"""
         global ip, port, model
         ip, port, model = ipadd, portnum, modelname
         say = Queue()
         Transcriber().queryingOff()
-        whisperprocess = Process(target=Transcriber().transcribing, args=(modelname, say, apikey, sysprompt))
+        whisperprocess = Process(target=Transcriber().transcribing, args=(modelname, say, apikey, sysprompt, log))
         whisperprocess.start()
         whisperprocess.join()
         talk = str(say.get())
+        if log is not None:
+            log.put(f"AI says: \"{talk}\"")
         Transcriber.tts(talk)
 
 # AI response class
@@ -184,7 +187,7 @@ class Transcriber():
         ssh.connect(ipaddr,22,username='nao',password='nao')
         ssh.open_sftp().get('/home/nao/recordings/microphones/request.wav', audfile)
 
-    def transcribing(self, model, say, apikey, sysprompt):
+    def transcribing(self, model, say, apikey, sysprompt, log):
         """ 
         Transcribes the audio file to text and plugs the 
         transcript into the AI model. Then it puts the reply in the queue
@@ -200,6 +203,9 @@ class Transcriber():
         for segment in segments:
             print(segment.text)
             cleanedQuery = segment.text
+
+        if log is not None:
+            log.put(f"Whisper thinks you said: {cleanedQuery}")
 
         # Deletes audio request
         if path.isfile(audfile) is True:
@@ -235,7 +241,7 @@ class AutoTalk():
         ssh.connect(ipaddr,22,username='nao',password='nao')
         ssh.open_sftp().get('/home/nao/recordings/camera/frame.jpg', picfile)
         return picfile
-    def analyzePic(picfile, apikey):
+    def analyzePic(picfile, apikey, log):
         """ This method sends the picture to an AI model and makes the robot say the reply """
         if model == "gemini":
             reply = AiResponse.geminiImage(picfile, apikey)
@@ -244,4 +250,6 @@ class AutoTalk():
 
         if path.isfile(picfile) is True:
             remove(picfile)
+        if log is not None:
+            log.put(f"Ai says: \"{reply}\"")
         Transcriber.tts(reply)

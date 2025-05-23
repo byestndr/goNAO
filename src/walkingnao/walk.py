@@ -5,7 +5,7 @@ import resource.qiapi as qiapi
 
 # Argument Parser
 class ConnectionDetails():
-    def runFromMain(ipadd, portnum, qistarted, mode, stop=False):
+    def runFromMain(ipadd, portnum, qistarted, mode, stop=False, log=None):
         """ Class with methods for connecting to the NAO. """
         global ip, port, walkMode
         ip, port, walkMode = ipadd, portnum, mode
@@ -19,11 +19,11 @@ class ConnectionDetails():
                 "Please check your script arguments. Run with -h option for help.")
             exit(1)
         print("Starting walk")
-        controllerWalk(0, stop)
+        controllerWalk(0, stop, log)
 
 
 # Controller walking function
-def controllerWalk(isStarted, stop):
+def controllerWalk(isStarted, stop, log):
     """ Reads inputs from controller and changes speed of the robot according to its values """
     done = False
     if type(stop) == threading.Event:
@@ -52,7 +52,10 @@ def controllerWalk(isStarted, stop):
 
         if walkMode.is_set() is True:
             # Prints values out for debugging
-            print(x * -0.7, y * -0.7, z * -0.7)
+            if log is not None:
+                log.put(str(x * -0.7, y * -0.7, z * -0.7))
+            else:
+                print(x * -0.7, y * -0.7, z * -0.7)
 
             # Checks if app has been initialized yet and initalizes
             robot_api.initMove(isStarted)

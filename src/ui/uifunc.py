@@ -1,5 +1,6 @@
 from sys import argv
 import threading
+import queue
 from PySide6 import QtWidgets
 
 from ui.window import Ui_MainWindow
@@ -20,6 +21,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sysprompt = ""
         self.stop = threading.Event()
         self.stop.clear()
+        self.logQueue = queue.Queue()
         self.api_key.setText(config().geminiApiKeyGUI())
         self.sys_prompt.setText(config().systemPromptGui())
         self.pushButton.clicked.connect(self.connectPushed)
@@ -51,14 +53,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 args=(ip, port, self.model, started, qistart, walkMode, self.checkBox.isChecked(), self.apikey, self.stop))
             naoTranscribeOff = threading.Thread(
                 target=buttonpresses.JoyButton().onAiOff,
-                args=(ip, port, self.model, started, qistart, self.apikey, self.sysprompt, self.stop))
+                args=(ip, port, self.model, started, qistart, self.apikey, self.sysprompt, self.stop, self.logQueue))
             walker = threading.Thread(
                 target=walk.ConnectionDetails.runFromMain,
-                args=(ip, port, qistart, walkMode, self.stop))
+                args=(ip, port, qistart, walkMode, self.stop, self.logQueue))
         elif self.checkBox.isChecked() is True:
             autotalk = threading.Thread(
                 target=naoai.ConnectionDetails.runFromMainStart,
-                args=(ip, port, self.model, qistart, self.checkBox.isChecked(), self.apikey, self.stop))
+                args=(ip, port, self.model, qistart, self.checkBox.isChecked(), self.apikey, self.stop, self.logQueue))
             walker = threading.Thread(
                 target=autowalk.ConnectionDetails.runFromMain,
                 args=(ip, port, qistart, self.stop))
@@ -73,6 +75,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             sleep(5)
             self.appendLog("Starting autotalk...")
             autotalk.start()
+
+        while self.stop.is_set() is False:
+            if not self.logQueue.empty():
+                self.appendLog(self.logQueue.get())
+        return
 
     def disconnectPushed(self):
         self.appendLog("Disconnecting...")
