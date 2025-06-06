@@ -7,32 +7,38 @@ from walkingnao import joystick
 
 class JoyButton():
     """ Control what happens with what happens during button presses """
-    def controllerButtons(self, ip, port, model, started, qistarted, walkmode, auto, apikey, stop=False):
+    def __init__(self, ip, port, model, ai_started, qistarted, apikey, stop=None):
+        self.ip = ip
+        self.port = port
+        self.model = model
+        self.ai_started = ai_started
+        self.qistarted = qistarted
+        self.apikey = apikey
+        self.stop = stop
+    def controllerButtons(self, walkmode, auto):
         """ Watch for button presses """
         done = False
+        stopped = False
         modes = ("walking", "headControl")
         current_mode = 0
 
-        if type(stop) == threading.Event:
-            stop = stop.is_set()
-
-        while done is False and stop is False:
+        while done is False and stopped is False:
             # Cross
             if joystick.controller().buttonStat(0) == 1:
                 pass
             # Circle
-            elif joystick.controller().buttonStat(1) == 1 and started.is_set() is False:
-                qiapi.QiService(ip, port, qistarted).recover()
+            elif joystick.controller().buttonStat(1) == 1 and self.ai_started.is_set() is False:
+                qiapi.QiService(self.ip, self.port, self.qistarted).recover()
             # Square
             elif joystick.controller().buttonStat(3) == 1:
                 print("Waving")
-                qiapi.QiService(ip, port, qistarted).wave()
+                qiapi.QiService(self.ip, self.port, self.qistarted).wave()
             # Triangle
-            elif joystick.controller().buttonStat(2) == 1 and started.is_set() is False:
+            elif joystick.controller().buttonStat(2) == 1 and self.ai_started.is_set() is False:
                 # AI button
-                started.set()
+                self.ai_started.set()
                 print("Starting AI, press circle to stop.\n")
-                naoai.ConnectionDetails.runFromMainStart(ip, port, model, qistarted, auto, apikey)
+                naoai.ConnectionDetails.runFromMainStart(self.ip, self.port, self.model, self.qistarted, auto, self.apikey)
             # DPAD UP
             elif joystick.controller().hatpos() == (0, 1):
                 for x in modes:
@@ -55,33 +61,43 @@ class JoyButton():
                     except IndexError:
                         pass
             elif joystick.controller().buttonStat(9) == 1:
-                stoptts.ConnectionDetails().runFromMain(ip, port, qistarted)
-                started.clear()
+                stoptts.ConnectionDetails().runFromMain(self.ip, self.port, self.qistarted)
+                self.ai_started.clear()
             # DPAD LEFT
             # elif joytest.controller.buttonStat(13) == 1:
             #     pass
             #  DPAD RIGHT
             # elif joytest.controller.buttonStat(14) == 1:
             #     pass
+
+            if self.stop is not None:
+                stopped = self.stop.is_set()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
         return
 
-    def onAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt, stop=False, log=None):
+    def onAiOff(self, sysprompt, log=None):
         """ Actions to take when microphones turn off """
         done = False
-        if type(stop) == threading.Event:
-            stop = stop.is_set()
-        while done is False and stop is False:
-            if joystick.controller().buttonStat(1) == 1 and started.is_set():
-                light = qiapi.QiService(ip, port, qistarted)
+        stopped = False
+
+        while done is False and stopped is False:
+            if joystick.controller().buttonStat(1) == 1 and self.ai_started.is_set():
+                light = qiapi.QiService(self.ip, self.port, self.qistarted)
                 print("Stopping Mics")
-                threading.Thread(target=light.aiThinking, args=(started, )).start()
-                naoai.ConnectionDetails.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt, log)
-                started.clear()
+                threading.Thread(target=light.aiThinking, args=(self.ai_started, )).start()
+   
+                naoai.ConnectionDetails.runFromMainStop(
+                    self.ip, self.port, self.model, self.qistarted, self.apikey, sysprompt, log)
+
+                self.ai_started.clear()
             else:
                 pass
+
+            if self.stop is not None:
+                stopped = self.stop.is_set()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

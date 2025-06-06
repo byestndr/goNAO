@@ -5,7 +5,7 @@ import resource.qiapi as qiapi
 
 # Argument Parser
 class ConnectionDetails():
-    def runFromMain(ipadd, portnum, qistarted, mode, stop=False, log=None):
+    def runFromMain(ipadd, portnum, qistarted, mode, stop=None, log=None):
         """ Class with methods for connecting to the NAO. """
         global ip, port, walkMode
         ip, port, walkMode = ipadd, portnum, mode
@@ -26,11 +26,11 @@ class ConnectionDetails():
 def controllerWalk(isStarted, stop, log):
     """ Reads inputs from controller and changes speed of the robot according to its values """
     done = False
-    if type(stop) == threading.Event:
-            stop = stop.is_set()
+    stopped = False
+
     from walkingnao import joystick
     import pygame
-    while done is False and stop is False:
+    while done is False and stopped is False:
         # Gets position for x and y axes on the left stick
         # Controller Axes
         y = joystick.controller().axispos(0)
@@ -71,6 +71,9 @@ def controllerWalk(isStarted, stop, log):
             print(x, y)
 
             robot_api.moveHead(y, x)
+
+        if stop is not None:
+            stopped = stop.is_set()
 
         # Pygame listener
         for event in pygame.event.get():

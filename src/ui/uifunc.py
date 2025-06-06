@@ -1,4 +1,5 @@
 from sys import argv
+from time import sleep
 import threading
 import queue
 from PySide6 import QtWidgets
@@ -47,14 +48,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.stop.clear()
 
         if self.checkBox.isChecked() is False:
-            
+
             buttonDetector = threading.Thread(
-                target=buttonpresses.JoyButton().controllerButtons,
-                args=(ip, port, self.model, started, qistart, walkMode, self.checkBox.isChecked(), self.apikey, self.stop))
+                target=buttonpresses.JoyButton(
+                    ip, port, self.model, started, qistart, self.apikey, self.stop).controllerButtons,
+                args=(walkMode, self.checkBox.isChecked()))
 
             naoTranscribeOff = threading.Thread(
-                target=buttonpresses.JoyButton().onAiOff,
-                args=(ip, port, self.model, started, qistart, self.apikey, self.sysprompt, self.stop, self.logQueue))
+                target=buttonpresses.JoyButton(
+                    ip, port, self.model, started, qistart, self.apikey, self.stop).onAiOff,
+                args=(self.sysprompt, self.logQueue))
 
             walker = threading.Thread(
                 target=walk.ConnectionDetails.runFromMain,
@@ -72,12 +75,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.appendLog("Starting walker...")
         walker.start()
-        if args.auto is False:
+        if self.checkBox.isChecked() is False:
             self.appendLog("Starting button detector...")
             buttonDetector.start()
             self.appendLog("Starting AI off listener...")
             naoTranscribeOff.start()
-        elif args.auto is True:
+        elif self.checkBox.isChecked() is True:
             sleep(5)
             self.appendLog("Starting autotalk...")
             autotalk.start()
