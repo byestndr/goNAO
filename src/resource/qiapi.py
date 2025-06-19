@@ -85,8 +85,8 @@ class QiService():
         """ Wave if the behavior is installed. """
         self.anim.run("animation-a6d9a5/behavior_1")
     def listBehaviors(self):
-        """ List all installed behaviors """
-        print(self.behave.getInstalledBehaviors())
+        """ Return all installed behaviors """
+        return self.behave.getInstalledBehaviors()
     def moveHead(self, x, y):
         """ Move the robot's head. X is left and right, Y is up and down. """
         if y == 0 and x > 0:

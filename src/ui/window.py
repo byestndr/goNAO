@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.0
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,9 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QGroupBox, QHBoxLayout,
-    QLabel, QLineEdit, QMainWindow, QMenuBar,
-    QPlainTextEdit, QPushButton, QRadioButton, QSizePolicy,
-    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
+    QLabel, QLineEdit, QListView, QListWidget,
+    QListWidgetItem, QMainWindow, QMenuBar, QPlainTextEdit,
+    QPushButton, QRadioButton, QSizePolicy, QStatusBar,
+    QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -30,11 +31,23 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_3 = QHBoxLayout(self.centralwidget)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.plainTextEdit = QPlainTextEdit(self.centralwidget)
+        self.widget_8 = QWidget(self.centralwidget)
+        self.widget_8.setObjectName(u"widget_8")
+        self.verticalLayout_5 = QVBoxLayout(self.widget_8)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.plainTextEdit = QPlainTextEdit(self.widget_8)
         self.plainTextEdit.setObjectName(u"plainTextEdit")
         self.plainTextEdit.setReadOnly(True)
 
-        self.horizontalLayout_3.addWidget(self.plainTextEdit)
+        self.verticalLayout_5.addWidget(self.plainTextEdit)
+
+        self.clearButton = QPushButton(self.widget_8)
+        self.clearButton.setObjectName(u"clearButton")
+
+        self.verticalLayout_5.addWidget(self.clearButton)
+
+
+        self.horizontalLayout_3.addWidget(self.widget_8)
 
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
@@ -201,6 +214,37 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
+        self.verticalLayout_6 = QVBoxLayout(self.tab_2)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.groupBox_6 = QGroupBox(self.tab_2)
+        self.groupBox_6.setObjectName(u"groupBox_6")
+        self.verticalLayout_8 = QVBoxLayout(self.groupBox_6)
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.commandList = QListView(self.groupBox_6)
+        self.commandList.setObjectName(u"commandList")
+
+        self.verticalLayout_8.addWidget(self.commandList)
+
+
+        self.verticalLayout_6.addWidget(self.groupBox_6)
+
+        self.groupBox_3 = QGroupBox(self.tab_2)
+        self.groupBox_3.setObjectName(u"groupBox_3")
+        self.verticalLayout_7 = QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.behaviorList = QListWidget(self.groupBox_3)
+        self.behaviorList.setObjectName(u"behaviorList")
+
+        self.verticalLayout_7.addWidget(self.behaviorList)
+
+        self.behaviorRefresh = QPushButton(self.groupBox_3)
+        self.behaviorRefresh.setObjectName(u"behaviorRefresh")
+
+        self.verticalLayout_7.addWidget(self.behaviorRefresh)
+
+
+        self.verticalLayout_6.addWidget(self.groupBox_3)
+
         self.tabWidget.addTab(self.tab_2, "")
 
         self.horizontalLayout_3.addWidget(self.tabWidget)
@@ -221,6 +265,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.clicked["bool"].connect(self.pushButton_2.setEnabled)
         self.gemini_button.clicked["bool"].connect(self.widget_7.setDisabled)
         self.ollama_button.clicked["bool"].connect(self.widget_7.setEnabled)
+        self.clearButton.clicked.connect(self.plainTextEdit.clear)
 
         self.tabWidget.setCurrentIndex(0)
 
@@ -230,6 +275,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
+        self.clearButton.setText(QCoreApplication.translate("MainWindow", u"Clear", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Connect", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"IP address:", None))
         self.ip_address.setText("")
@@ -247,6 +293,12 @@ class Ui_MainWindow(object):
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Gemini API key", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Model", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Configure", None))
+        self.groupBox_6.setTitle(QCoreApplication.translate("MainWindow", u"Command Remapping", None))
+        self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Behavior Remapping", None))
+#if QT_CONFIG(tooltip)
+        self.behaviorRefresh.setToolTip(QCoreApplication.translate("MainWindow", u"Pulls behaviors from your NAO robot to map buttons to", None))
+#endif // QT_CONFIG(tooltip)
+        self.behaviorRefresh.setText(QCoreApplication.translate("MainWindow", u"Refresh behaviors", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Controller", None))
     # retranslateUi
 

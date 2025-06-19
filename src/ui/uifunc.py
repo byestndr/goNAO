@@ -10,11 +10,15 @@ import walkingnao.walk as walk
 import walkingnao.autowalk as autowalk
 from naoai import naoai
 from walkingnao import buttonpresses
+from resource.qiapi import QiService
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+        self.qistart = threading.Event()
+        self.qistart.clear()
+
         self.setupUi(self)
         self.model = ""
         self.apikey = ""
@@ -26,6 +30,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sys_prompt.setText(config().systemPromptGui())
         self.pushButton.clicked.connect(self.connectPushed)
         self.pushButton_2.clicked.connect(self.disconnectPushed)
+        self.behaviorRefresh.clicked.connect(self.behavRefresh)
+        
     def connectPushed(self):
         """ 
         Connects to the robot when the connect button is pushed.
@@ -41,8 +47,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         started = threading.Event()
         started.clear()
-        qistart = threading.Event()
-        qistart.clear()
         walkMode = threading.Event()
         walkMode.set()
         self.stop.clear()
@@ -51,27 +55,27 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             buttonDetector = threading.Thread(
                 target=buttonpresses.JoyButton(
-                    ip, port, self.model, started, qistart, self.apikey, self.stop).controllerButtons,
+                    ip, port, self.model, started, self.qistart, self.apikey, self.stop).controllerButtons,
                 args=(walkMode, self.checkBox.isChecked()))
 
             naoTranscribeOff = threading.Thread(
                 target=buttonpresses.JoyButton(
-                    ip, port, self.model, started, qistart, self.apikey, self.stop).onAiOff,
+                    ip, port, self.model, started, self.qistart, self.apikey, self.stop).onAiOff,
                 args=(self.sysprompt, self.logQueue))
 
             walker = threading.Thread(
                 target=walk.ConnectionDetails.runFromMain,
-                args=(ip, port, qistart, walkMode, self.stop, self.logQueue))
+                args=(ip, port, self.qistart, walkMode, self.stop, self.logQueue))
 
         elif self.checkBox.isChecked() is True:
 
             autotalk = threading.Thread(
                 target=naoai.ConnectionDetails.runFromMainStart,
-                args=(ip, port, self.model, qistart, self.checkBox.isChecked(), self.apikey, self.stop, self.logQueue))
+                args=(ip, port, self.model, self.qistart, self.checkBox.isChecked(), self.apikey, self.stop, self.logQueue))
 
             walker = threading.Thread(
                 target=autowalk.ConnectionDetails.runFromMain,
-                args=(ip, port, qistart, self.stop))
+                args=(ip, port, self.qistart, self.stop))
 
         self.appendLog("Starting walker...")
         walker.start()
@@ -155,6 +159,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         """ Append the window's log with the text parameter """
         self.plainTextEdit.appendPlainText(text)
 
+    def behavRefresh(self):
+        ip, port = self.ip_address.text(), self.port_num.text()
+        if not ip or not port:
+            self.appendLog("Enter the robot's IP address and port")
+            return
+        self.appendLog(f"Connecting to {self.ip_address.text()}:{self.port_num.text()}")
+        # Currently justs prints it
+        self.appendLog(QiService(ip, port, self.qistart).listBehaviors())
+        ### TODO: Get the response and parse it once I get my hands back on a NAO
 def run():
     """ Method for starting the window """
     app = QtWidgets.QApplication(argv)
