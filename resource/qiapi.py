@@ -6,10 +6,13 @@ class QiService():
     """
     This class defines all of the qi services and actions.
     """
-    def __init__(self, ip, port, started):
+    def __init__(self, address, started):
         if started.is_set() is False:
             try:
                 global app, session
+                ip = address.ip
+                port = address.port
+
                 connection_url = "tcp://" + ip + ":" + str(port)
                 app = Application(["goNAO", "--qi-url=" + connection_url])
 

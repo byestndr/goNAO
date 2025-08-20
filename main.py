@@ -2,10 +2,22 @@ import argparse
 import threading
 from sys import exit
 from time import sleep
-from resource.config import Configuration as config
-import walkingnao.walk as walk
-import resource.qiapi as qiapi
-import walkingnao.autowalk as autowalk
+from goNAO.resource.config import Configuration as config
+import goNAO.walkingnao.walk as walk
+import goNAO.resource.qiapi as qiapi
+import goNAO.walkingnao.autowalk as autowalk
+
+class RobotAddress:
+    def __init__(self, ipaddress, robotport):
+        ip = ipaddress
+        port = robotport
+
+class AiInfo:
+    def __init__(self, model, isGemini, sysPrompt):
+        ollamaModel = model
+        usingGemini = isGemini
+        systemPrompt = sysPrompt
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -26,10 +38,8 @@ else:
 
 args = parser.parse_args()
 
-if args.auto is False:
-    from walkingnao import buttonpresses
-if args.auto is True:
-    from naoai import naoai
+robotInfo = RobotAddress(args.ip, args.port)
+aiInfo = AiInfo(args.model, args.gemini, args.system)
 
 if args.gemini is False:
     model = config().modelType(args.model)
@@ -47,6 +57,11 @@ qistart = threading.Event()
 qistart.clear()
 walkMode = threading.Event()
 walkMode.set()
+
+
+class RobotAPI:
+    hasQiStarted = qistart
+    apiService = qiapi.QiService(robotInfo, hasQiStarted)
 
 # Defines processes
 if args.auto is False:
