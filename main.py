@@ -2,10 +2,10 @@ import argparse
 import threading
 from sys import exit
 from time import sleep
-from goNAO.resource.config import Configuration as config
-import goNAO.walkingnao.walk as walk
-import goNAO.resource.qiapi as qiapi
-import goNAO.walkingnao.autowalk as autowalk
+from resource.config import Configuration as config
+import walkingnao.walk as walk
+import resource.qiapi as qiapi
+import walkingnao.autowalk as autowalk
 
 class RobotAddress:
     def __init__(self, ipaddress, robotport):
