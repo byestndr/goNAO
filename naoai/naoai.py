@@ -1,44 +1,45 @@
 """Connect AI to NAO"""
 
 from multiprocessing import Process, Queue
-from goNAO.resource.qiapi import QiService
+from goNAO.naoai.ai_transcriber import Transcriber
 
 # TODO: Get Autotalk up and working again
+
 
 # This connects to the NAO
 class ConnectionDetails:
     """Class with methods for connecting to the NAO."""
 
-    def runFromMainStart(ipadd, portnum, modelname, qistarted):
-        """Method for starting the AI function"""
-        global ip, port, model, qistart
-        ip, port, model, qistart = ipadd, portnum, modelname, qistarted
+    def __init__(self, address, api):
+        self.ip, self.port = address.ip, address.port
+
         try:
             # Initialize qi framework.
-            global ipaddr, robot_api
-            ipaddr = ip
-            robot_api = QiService(ip, port, qistarted)
+            self.robot_api = api
 
         except RuntimeError:
             print(
-                "Can't connect to NAO at \"" + ip + '" at port ' + str(port) + ".\n"
+                "Can't connect to NAO at \"" + self.ip + '" at port ' + str(self.port) + ".\n"
                 "Please check your script arguments. Run with -h option for help."
             )
             exit(1)
-        Transcriber().queryingOn()
 
-    def startTranscription(ipadd, portnum, modelname, apikey, sysprompt):
+    def startMicrophone(self, api):
+        """Method for starting the AI function"""
+
+        Transcriber().queryingOn(api)
+
+    def startTranscription(self, modelInfo, apikey, sysprompt):
         """Method for stopping the AI function"""
-        global ip, port, model
-        ip, port, model = ipadd, portnum, modelname
+        # TODO: Get rid of the queue and multiprocessing process
+
         say = Queue()
-        Transcriber().queryingOff()
+        Transcriber().queryingOff(self.robot_api, self.ip)
+        # TODO: Separate AI response and transcription
         whisperprocess = Process(
             target=Transcriber().transcribing, args=(modelname, say, apikey, sysprompt)
         )
         whisperprocess.start()
         whisperprocess.join()
         talk = str(say.get())
-        Transcriber.tts(talk)
-
-
+        Transcriber().tts(talk, self.robot_api)

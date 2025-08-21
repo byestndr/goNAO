@@ -13,10 +13,11 @@ class RobotAddress:
         self.port = robotport
 
 class AiInfo:
-    def __init__(self, model, isGemini, sysPrompt):
+    def __init__(self, model, isGemini, sysPrompt, geminiKey=None):
         self.ollamaModel = model
         self.usingGemini = isGemini
         self.systemPrompt = sysPrompt
+        self.apiKey = geminiKey
 
 
 if __name__ == "__main__":
@@ -38,15 +39,16 @@ else:
 
 args = parser.parse_args()
 
-robotInfo = RobotAddress(args.ip, args.port)
-aiInfo = AiInfo(args.model, args.gemini, args.system)
-
+api_key = None
 if args.gemini is False:
     model = config().modelType(args.model)
     api_key = None
 elif args.gemini is True:
     model = "gemini"
     api_key = config().geminiApiKey()
+
+robotInfo = RobotAddress(args.ip, args.port)
+aiInfo = AiInfo(args.model, args.gemini, args.system, api_key)
 
 sysprompt = config().systemPrompt(args.system)
 
@@ -62,6 +64,8 @@ walkMode.set()
 class RobotAPI:
     hasQiStarted = qistart
     apiService = qiapi.QiService(robotInfo, hasQiStarted)
+
+NaoAPI = RobotAPI.apiService
 
 buttonDetector = threading.Thread(target=buttonpresses.JoyButton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode, args.auto, api_key))
 naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))

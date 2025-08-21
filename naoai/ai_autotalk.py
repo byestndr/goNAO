@@ -3,11 +3,9 @@ from base64 import b64encode
 from requests import post
 from ollama import chat
 
-
-
 class AutoResponse:
 
-    def ollamaImage(self, path):
+    def ollamaImage(self, path, model):
         """Module for sending images to Ollama and getting responses."""
         with open(path, "rb") as image_file:
             image = b64encode(image_file.read()).decode("utf-8")
@@ -26,7 +24,7 @@ class AutoResponse:
         reply = response["message"]["content"]
         return reply
 
-    def geminiImage(path, api_key):
+    def geminiImage(self, path, api_key):
         """Module for sending images to Gemini and getting a response. An API key is needed."""
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
         with open(path, "rb") as image_file:
