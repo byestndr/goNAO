@@ -6,6 +6,7 @@ from resource.config import Configuration as config
 import walkingnao.walk as walk
 import resource.qiapi as qiapi
 import walkingnao.autowalk as autowalk
+import walkingnao.buttonpresses as buttonpresses
 
 class RobotAddress:
     def __init__(self, ipaddress, robotport):

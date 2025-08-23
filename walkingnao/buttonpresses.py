@@ -2,13 +2,14 @@
 import threading
 import pygame
 from naoai import stoptts, naoai
-import resource.qiapi as qiapi
-from walkingnao import joystick
+import goNAO.resource.qiapi as qiapi
+from goNAO.walkingnao import joystick
 
 class JoyButton():
     """ Control what happens with what happens during button presses """
-    def controllerButtons(self, ip, port, model, started, qistarted, walkmode, auto, apikey):
+    def controllerButtons(self, address, api, started, walkmode):
         """ Watch for button presses """
+
         done = False
         modes = ("walking", "headControl")
         current_mode = 0
@@ -18,17 +19,17 @@ class JoyButton():
                 pass
             # Circle
             elif joystick.controller().buttonStat(1) == 1 and started.is_set() is False:
-                qiapi.QiService(ip, port, qistarted).recover()
+                api.recover()
             # Square
             elif joystick.controller().buttonStat(3) == 1:
                 print("Waving")
-                qiapi.QiService(ip, port, qistarted).wave()
+                api.wave()
             # Triangle
             elif joystick.controller().buttonStat(2) == 1 and started.is_set() is False:
                 # AI button
                 started.set()
                 print("Starting AI, press circle to stop.\n")
-                naoai.ConnectionDetails.runFromMainStart(ip, port, model, qistarted, auto, apikey)
+                naoai.ConnectionDetails(address, api).startMicrophone(api)
             # DPAD UP
             elif joystick.controller().hatpos() == (0, 1):
                 for x in modes:
