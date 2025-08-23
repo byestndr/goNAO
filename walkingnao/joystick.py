@@ -27,9 +27,9 @@ class controller:
             return 0
     def buttonStat(self, button):
         return self.joys.get_button(button)
-    def buttonNum():
+    def buttonNum(self):
         return range(self.joys.get_numbuttons())
-    def hatpos():
+    def hatpos(self):
         return self.joys.get_hat(0)
 
 #done = False

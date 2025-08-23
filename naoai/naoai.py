@@ -1,7 +1,7 @@
 """Connect AI to NAO"""
 
 from multiprocessing import Process, Queue
-from goNAO.naoai.ai_transcriber import Transcriber
+from naoai.ai_transcriber import Transcriber
 
 # TODO: Get Autotalk up and working again
 
@@ -29,7 +29,7 @@ class ConnectionDetails:
 
         Transcriber().queryingOn(api)
 
-    def startTranscription(self, modelInfo, apikey, sysprompt):
+    def startTranscription(self, modelInfo):
         """Method for stopping the AI function"""
         # TODO: Get rid of the queue and multiprocessing process
 

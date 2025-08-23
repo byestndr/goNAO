@@ -4,25 +4,16 @@ import resource.qiapi as qiapi
 
 # Argument Parser
 class ConnectionDetails():
-    def runFromMain(ipadd, portnum, qistarted, mode):
+    def startWalk(self, api, mode):
         """ Class with methods for connecting to the NAO. """
-        global ip, port, walkMode
-        ip, port, walkMode = ipadd, portnum, mode
+        robot_api = api
 
-        try:
-            # Initialize qi framework.
-            global robot_api
-            robot_api = qiapi.QiService(ip, port, qistarted)
-        except RuntimeError:
-            print ("Can't connect to NAO at \"" + ip + "\" at port " + str(port) +".\n"
-                "Please check your script arguments. Run with -h option for help.")
-            exit(1)
         print("Starting walk")
-        controllerWalk(0)
+        controllerWalk(0, robot_api, mode)
         
 
 # Controller walking function
-def controllerWalk(isStarted):
+def controllerWalk(isStarted, robot_api, walkMode):
     """ Reads inputs from controller and changes speed of the robot according to its values """
     done = False
     from walkingnao import joystick

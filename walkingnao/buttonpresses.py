@@ -2,8 +2,7 @@
 import threading
 import pygame
 from naoai import stoptts, naoai
-import goNAO.resource.qiapi as qiapi
-from goNAO.walkingnao import joystick
+from walkingnao import joystick
 
 class JoyButton():
     """ Control what happens with what happens during button presses """
@@ -52,7 +51,7 @@ class JoyButton():
                     except IndexError:
                         pass
             elif joystick.controller().buttonStat(9) == 1:
-                stoptts.ConnectionDetails().runFromMain(ip, port, qistarted)
+                stoptts.ConnectionDetails().runFromMain(api)
                 started.clear()
             # DPAD LEFT
             # elif joytest.controller.buttonStat(13) == 1:
@@ -64,15 +63,14 @@ class JoyButton():
                 if event.type == pygame.QUIT:
                     done = True
 
-    def onAiOff(self, ip, port, model, started, qistarted, apikey, sysprompt):
+    def onAiOff(self, address, api, model_info, started):
         """ Actions to take when microphones turn off """
         done = False
         while done is False:
             if joystick.controller().buttonStat(1) == 1 and started.is_set():
-                light = qiapi.QiService(ip, port, qistarted)
                 print("Stopping Mics")
-                threading.Thread(target=light.aiThinking, args=(started, )).start()
-                naoai.ConnectionDetails.runFromMainStop(ip, port, model, qistarted, apikey, sysprompt)
+                threading.Thread(target=api.aiThinking, args=(started, )).start()
+                naoai.ConnectionDetails(address, api).startTranscription(model_info)
                 started.clear()
             else:
                 pass

@@ -1,7 +1,7 @@
 from os import path, remove
 import paramiko
-from goNAO.naoai.ai_autotalk import AutoResponse
-from goNAO.naoai.ai_transcriber import Transcriber
+from naoai.ai_autotalk import AutoResponse
+from naoai.ai_transcriber import Transcriber
 
 class AutoTalk():
     """ Class for defining the methods to make the robot auto talk """

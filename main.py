@@ -68,9 +68,9 @@ class RobotAPI:
 
 NaoAPI = RobotAPI.apiService
 
-buttonDetector = threading.Thread(target=buttonpresses.JoyButton().controllerButtons, args=(args.ip, args.port, model, started, qistart, walkMode, args.auto, api_key))
-naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
-walker = threading.Thread(target=walk.ConnectionDetails.runFromMain, args=(args.ip, args.port, qistart, walkMode))
+buttonDetector = threading.Thread(target=buttonpresses.JoyButton().controllerButtons, args=(robotInfo, NaoAPI, started, walkMode))
+# naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
+walker = threading.Thread(target=walk.ConnectionDetails.startWalk, args=(args.ip, args.port, NaoAPI, walkMode))
 
 
 # if args.auto is True:
@@ -80,14 +80,14 @@ walker = threading.Thread(target=walk.ConnectionDetails.runFromMain, args=(args.
 # Starts Processes
 try:
     walker.start()
-    if args.auto is False:
-        buttonDetector.start()
-        naoTranscribeOff.start()
-    elif args.auto is True:
-        sleep(5)
-        autotalk.start()
+    #if args.auto is False:
+    buttonDetector.start()
+    #naoTranscribeOff.start()
+    # elif args.auto is True:
+    #     sleep(5)
+    #     autotalk.start()
 except KeyboardInterrupt:
     if args.auto is True:
         print("Stopping sonars")
-        qiapi.QiService(args.ip, args.port, qistart).stopSonar()
+        NaoAPI.stopSonar()
     exit(0)

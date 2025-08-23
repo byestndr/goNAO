@@ -1,6 +1,6 @@
 import paramiko
 from faster_whisper import WhisperModel
-from goNAO.naoai.ai_response import AiResponse
+from naoai.ai_response import AiResponse
 from os import path, remove
 
 
