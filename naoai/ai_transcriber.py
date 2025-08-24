@@ -1,3 +1,4 @@
+import asyncio
 import paramiko
 from faster_whisper import WhisperModel
 from naoai.ai_response import AiResponse
@@ -29,37 +30,27 @@ class Transcriber:
         ssh.connect(ip, 22, username="nao", password="nao")
         ssh.open_sftp().get("/home/nao/recordings/microphones/request.wav", audfile)
 
-    def transcribing(self, model, say, apikey, sysprompt):
+    async def transcribing(self) -> str:
         """
         Transcribes the audio file to text and plugs the
         transcript into the AI model. Then it puts the reply in the queue
         """
-        # Sets model size
-        model_size = "tiny.en"
 
-        # Transcribes using faster whisper
+        model_size = "tiny.en"
         whispmodel = WhisperModel(
             model_size, device="cuda", compute_type="int8_float16"
         )
-        segments, info = whispmodel.transcribe(str(audfile))
+        segments, info = await asyncio.to_thread(whispmodel.transcribe, str(audfile))
 
         segments = list(segments)
         for segment in segments:
             print(segment.text)
             cleanedQuery = segment.text
 
-        # Deletes audio request
         if path.isfile(audfile) is True:
             remove(audfile)
 
-        # Make NAO say the response by calling the method corresponding to each model
-        if model == "gemini":
-            reply = AiResponse().gemini(cleanedQuery, apikey, sysprompt)
-        else:
-            reply = AiResponse().ollama(cleanedQuery, model, sysprompt)
-
-        # Puts the reply into the speech queue
-        say.put(reply)
+        return cleanedQuery
 
     def tts(self, reply, api):
         """Makes the robot say whatever is in the reply parameter"""

@@ -1,7 +1,9 @@
 """Connect AI to NAO"""
 
+import asyncio
 from multiprocessing import Process, Queue
 from naoai.ai_transcriber import Transcriber
+from naoai.ai_response import AiResponse
 
 # TODO: Get Autotalk up and working again
 
@@ -12,34 +14,26 @@ class ConnectionDetails:
 
     def __init__(self, address, api):
         self.ip, self.port = address.ip, address.port
-
-        try:
-            # Initialize qi framework.
-            self.robot_api = api
-
-        except RuntimeError:
-            print(
-                "Can't connect to NAO at \"" + self.ip + '" at port ' + str(self.port) + ".\n"
-                "Please check your script arguments. Run with -h option for help."
-            )
-            exit(1)
+        self.robot_api = api
 
     def startMicrophone(self, api):
         """Method for starting the AI function"""
 
         Transcriber().queryingOn(api)
 
-    def startTranscription(self, modelInfo):
+    async def startTranscription(self, modelInfo):
         """Method for stopping the AI function"""
         # TODO: Get rid of the queue and multiprocessing process
+        system_prompt = modelInfo.systemPrompt
 
         say = Queue()
         Transcriber().queryingOff(self.robot_api, self.ip)
-        # TODO: Separate AI response and transcription
-        whisperprocess = Process(
-            target=Transcriber().transcribing, args=(modelname, say, apikey, sysprompt)
-        )
-        whisperprocess.start()
-        whisperprocess.join()
-        talk = str(say.get())
-        Transcriber().tts(talk, self.robot_api)
+
+        transcribed_text = await Transcriber().transcribing()
+
+        if modelInfo.usingGemini:
+            reply = AiResponse().gemini(transcribed_text, modelInfo.apiKey, system_prompt)
+        else:
+            reply = AiResponse().ollama(transcribed_text, modelInfo.ollamaModel, system_prompt)
+
+        Transcriber().tts(reply, self.robot_api)
