@@ -20,8 +20,7 @@ class ConnectionDetails:
         """Method for starting the AI function"""
 
         Transcriber().queryingOn(api)
-
-    async def startTranscription(self, modelInfo):
+    def startTranscription(self, modelInfo):
         """Method for stopping the AI function"""
         # TODO: Get rid of the queue and multiprocessing process
         system_prompt = modelInfo.systemPrompt
@@ -29,7 +28,7 @@ class ConnectionDetails:
         say = Queue()
         Transcriber().queryingOff(self.robot_api, self.ip)
 
-        transcribed_text = await Transcriber().transcribing()
+        transcribed_text = Transcriber().transcribing()
 
         if modelInfo.usingGemini:
             reply = AiResponse().gemini(transcribed_text, modelInfo.apiKey, system_prompt)

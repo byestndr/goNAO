@@ -30,7 +30,7 @@ class Transcriber:
         ssh.connect(ip, 22, username="nao", password="nao")
         ssh.open_sftp().get("/home/nao/recordings/microphones/request.wav", audfile)
 
-    async def transcribing(self) -> str:
+    def transcribing(self) -> str:
         """
         Transcribes the audio file to text and plugs the
         transcript into the AI model. Then it puts the reply in the queue
@@ -40,7 +40,7 @@ class Transcriber:
         whispmodel = WhisperModel(
             model_size, device="cuda", compute_type="int8_float16"
         )
-        segments, info = await asyncio.to_thread(whispmodel.transcribe, str(audfile))
+        segments, info = whispmodel.transcribe(str(audfile))
 
         segments = list(segments)
         for segment in segments:

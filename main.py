@@ -69,8 +69,8 @@ class RobotAPI:
 NaoAPI = RobotAPI.apiService
 
 buttonDetector = threading.Thread(target=buttonpresses.JoyButton().controllerButtons, args=(robotInfo, NaoAPI, started, walkMode))
-# naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(args.ip, args.port, model, started, qistart, api_key, sysprompt))
-walker = threading.Thread(target=walk.ConnectionDetails.startWalk, args=(args.ip, args.port, NaoAPI, walkMode))
+naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(robotInfo, NaoAPI, aiInfo, started))
+walker = threading.Thread(target=walk.ConnectionDetails().startWalk, args=(NaoAPI, walkMode))
 
 
 # if args.auto is True:
@@ -82,7 +82,7 @@ try:
     walker.start()
     #if args.auto is False:
     buttonDetector.start()
-    #naoTranscribeOff.start()
+    naoTranscribeOff.start()
     # elif args.auto is True:
     #     sleep(5)
     #     autotalk.start()

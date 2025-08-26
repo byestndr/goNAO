@@ -1,6 +1,7 @@
 from time import sleep
 from sys import exit
 import resource.qiapi as qiapi
+from walkingnao import joystick
 
 # Argument Parser
 class ConnectionDetails():
@@ -9,11 +10,12 @@ class ConnectionDetails():
         robot_api = api
 
         print("Starting walk")
-        controllerWalk(0, robot_api, mode)
+        controller = joystick.controller()
+        controllerWalk(0, robot_api, mode, controller)
         
 
 # Controller walking function
-def controllerWalk(isStarted, robot_api, walkMode):
+def controllerWalk(isStarted, robot_api, walkMode, controller):
     """ Reads inputs from controller and changes speed of the robot according to its values """
     done = False
     from walkingnao import joystick
@@ -21,10 +23,10 @@ def controllerWalk(isStarted, robot_api, walkMode):
     while done is False:
         # Gets position for x and y axes on the left stick
         # Controller Axes
-        y = joystick.controller().axispos(0)
-        x = joystick.controller().axispos(1)
+        y = controller.axispos(0)
+        x = controller.axispos(1)
         # Z is rotation
-        z = joystick.controller().axispos(3)
+        z = controller.axispos(3)
 
         # Checks if Z axis is being used
         if z > 0 or z < 0:
