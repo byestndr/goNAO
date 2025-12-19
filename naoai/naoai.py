@@ -22,10 +22,8 @@ class ConnectionDetails:
         Transcriber().queryingOn(api)
     def startTranscription(self, modelInfo):
         """Method for stopping the AI function"""
-        # TODO: Get rid of the queue and multiprocessing process
         system_prompt = modelInfo.systemPrompt
 
-        say = Queue()
         Transcriber().queryingOff(self.robot_api, self.ip)
 
         transcribed_text = Transcriber().transcribing()

@@ -1,12 +1,15 @@
 import argparse
 import threading
-from sys import exit
+from concurrent.futures import ProcessPoolExecutor
+from sys import exit, stdout
+from os import path
 from time import sleep
 from resource.config import Configuration as config
-import walkingnao.walk as walk
 import resource.qiapi as qiapi
+import walkingnao.walk as walk
 import walkingnao.autowalk as autowalk
 import walkingnao.buttonpresses as buttonpresses
+import naoai.ai_getpicture as ai_getpicture
 
 class RobotAddress:
     def __init__(self, ipaddress, robotport):
@@ -68,24 +71,35 @@ class RobotAPI:
 
 NaoAPI = RobotAPI.apiService
 
-buttonDetector = threading.Thread(target=buttonpresses.JoyButton().controllerButtons, args=(robotInfo, NaoAPI, started, walkMode))
-naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(robotInfo, NaoAPI, aiInfo, started))
-walker = threading.Thread(target=walk.ConnectionDetails().startWalk, args=(NaoAPI, walkMode))
+if args.auto is True:
+    autotalk = threading.Thread(target=ai_getpicture.AutoTalk(robotInfo, NaoAPI, aiInfo).talkLoop)
+    walker = threading.Thread(target=autowalk.ConnectionDetails().runFromMain, args=(NaoAPI, ))
+else:
+    buttonDetector = threading.Thread(target=buttonpresses.JoyButton().controllerButtons, args=(robotInfo, NaoAPI, started, walkMode))
+    naoTranscribeOff = threading.Thread(target=buttonpresses.JoyButton().onAiOff, args=(robotInfo, NaoAPI, aiInfo, started))
+    walker = threading.Thread(target=walk.ConnectionDetails().startWalk, args=(NaoAPI, walkMode))
 
+current_directory = path.dirname(path.realpath(__file__))
 
-# if args.auto is True:
-#     autotalk = threading.Thread(target=naoai.ConnectionDetails.runFromMainStart, args=(args.ip, args.port, model, qistart, args.auto, api_key))
-#     walker = threading.Thread(target=autowalk.ConnectionDetails.runFromMain, args=(args.ip, args.port, qistart))
+if not path.isdir(f'{current_directory}/tiny.en'):
+    stdout.write("Downloading transcription model")
+    stdout.flush()
+    from faster_whisper import download_model
+    download_model("tiny.en", "tiny.en")
+    stdout.write('\b')
+    stdout.write('Downloaded transcription model')
+    stdout.flush()
+
 
 # Starts Processes
 try:
     walker.start()
-    #if args.auto is False:
-    buttonDetector.start()
-    naoTranscribeOff.start()
-    # elif args.auto is True:
-    #     sleep(5)
-    #     autotalk.start()
+    if args.auto is False:
+        buttonDetector.start()
+        naoTranscribeOff.start()
+    elif args.auto is True:
+        sleep(5)
+        autotalk.start()
 except KeyboardInterrupt:
     if args.auto is True:
         print("Stopping sonars")

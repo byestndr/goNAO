@@ -12,7 +12,13 @@ class AiResponse:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={api_key}"
 
         data = {
-            "system_instruction": {"parts": {"text": sysprompt}},
+            "system_instruction": {
+                "parts": [
+                {
+                    "text": str(sysprompt)
+                }
+              ]
+            },
             "contents": [{"parts": [{"text": prompt}]}],
             "safetySettings": [
                 {
