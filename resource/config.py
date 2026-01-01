@@ -10,7 +10,7 @@ class Configuration:
         self.config = ConfigParser()
         self.config.read(self.configpath)
 
-    def setKey(self, key: str, value: str):
+    def setKey(self, key: str, value: str) -> None:
         self.config.set("Main", key, value)
 
         try:
@@ -52,6 +52,3 @@ class Configuration:
         self.setKey(key='model', value=selectedModel)
 
         return
-
-    def setGeminiKey(self, api_key):
-        self.setKey(key='api_key', value=api_key)

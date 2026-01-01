@@ -80,7 +80,7 @@ else:
 
     if api_key is None:
         new_api_key = input("Set a Gemini API key: ")
-        config.setGeminiKey(api_key=new_api_key)
+        config.setKey(key='api_key', value=new_api_key)
         api_key = new_api_key
 
 sysprompt = config.getKey("system_prompt")
