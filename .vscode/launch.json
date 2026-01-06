@@ -1,0 +1,37 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "name": "goNAO Debug: Auto Mode",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--auto", "--model", "gemma3:1b", "--ip", "${input:ipAddress}"]
+        },
+        {
+            "name": "goNAO Debug: Manual Mode",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--model", "${input:model}", "--ip", "${input:ipAddress}"]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "ipAddress",
+            "type": "promptString",
+            "description": "Enter the robot IP address"
+        },
+         {
+            "id": "model",
+            "type": "promptString",
+            "description": "Enter a valid Ollama model"
+        }
+    ]
+}
