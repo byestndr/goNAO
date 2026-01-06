@@ -1,23 +1,23 @@
 """Configure AI settings"""
 
-from configparser import ConfigParser, NoOptionError, NoSectionError
+import configparser
 from ollama import list, ListResponse
 
 
 class Configuration:
     def __init__(self, current_directory):
         self.configpath = current_directory + "/config.ini"
-        self.config = ConfigParser()
+        self.config = configparser.ConfigParser()
         self.config.read(self.configpath)
 
     def setKey(self, key: str, value: str) -> None:
-        self.config.set("Main", key, value)
-
         try:
+            self.config.set("Main", key, value)
             with open(self.configpath, "w", encoding="utf-8") as configfile:
                 self.config.write(configfile)
-        except NoSectionError:
+        except configparser.NoSectionError:
             self.config.add_section("Main")
+            self.config.set("Main", key, value)
             with open(self.configpath, "w", encoding="utf-8") as configfile:
                 self.config.write(configfile)
 
@@ -26,7 +26,7 @@ class Configuration:
     def getKey(self, key) -> str:
         try: 
             value = self.config.get("Main", key)
-        except NoOptionError:
+        except configparser.NoOptionError:
             value = None
 
         return value

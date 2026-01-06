@@ -66,6 +66,7 @@ current_path = path.dirname(path.realpath(__file__))
 config = config(current_directory=current_path)
 
 if args.gemini is False:
+    api_key = None
     if args.model:
         config.setOllamaModel(args.model)
         model = args.model
