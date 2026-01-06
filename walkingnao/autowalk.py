@@ -1,7 +1,6 @@
 import math
 from time import sleep
 from sys import exit
-import resource.qiapi as qiapi
 
 # Argument Parser
 class ConnectionDetails():

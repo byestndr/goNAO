@@ -24,7 +24,7 @@ class Configuration:
         return
 
     def getKey(self, key) -> str:
-        try: 
+        try:
             value = self.config.get("Main", key)
         except configparser.NoOptionError:
             value = None
@@ -49,6 +49,6 @@ class Configuration:
             print(f"Models available: {model_list}")
             exit(1)
 
-        self.setKey(key='model', value=selectedModel)
+        self.setKey(key="model", value=selectedModel)
 
         return

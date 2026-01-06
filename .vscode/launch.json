@@ -19,7 +19,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--model", "gemma3:1b", "--ip", "${input:ipAddress}"]
+            "args": ["--model", "${input:model}", "--ip", "${input:ipAddress}"]
         }
     ],
     "inputs": [
@@ -27,6 +27,11 @@
             "id": "ipAddress",
             "type": "promptString",
             "description": "Enter the robot IP address"
+        },
+         {
+            "id": "model",
+            "type": "promptString",
+            "description": "Enter a valid Ollama model"
         }
     ]
 }
